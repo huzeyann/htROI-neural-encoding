@@ -1,0 +1,10 @@
+
+DATASET:
+  NAME: 'Algonauts2021'
+
+  TRANSFORM: 'i3d_rgb'
+  RESOLUTION: 224
+  FRAMES: 16
+
+
+  ROOT_DIR: '/home/huze/Algonauts_2021_data/'
