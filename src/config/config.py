@@ -95,7 +95,7 @@ __C.TRAINER.CALLBACKS.LOGGER.ROOT_DIR = '/data/huze/algonauts2021/logs/'
 
 __C.PREDICTION_DIR = '/data_smr/huze/projects/ube/predictions/'
 
-__C.DEBUG = False
+__C.DEBUG = True
 
 def check_cfg(C):
     if C.DATASET.NAME == 'Algonauts2021':

@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     if clearml_installed:
         task = Task.init(
-            project_name='debug',
+            project_name='Algonauts2021',
             task_name='task template',
             tags=None,
             reuse_last_task_id=False,

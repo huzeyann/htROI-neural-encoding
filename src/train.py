@@ -97,7 +97,7 @@ def train_main(cfg, task_id='debug'):
     plmodel = plmodel.load_from_checkpoint(trainer.checkpoint_callback.best_model_path, cfg=cfg)
     predictions = trainer.predict(plmodel, datamodule=datamodule)
     prediction = torch.cat([p for p in predictions], 0)
-    print(prediction.shape)
+    # print(prediction.shape)
     torch.save(prediction.cpu(), prediction_path)
 
     ### delete ckpt to save disk space (default False)
@@ -107,5 +107,5 @@ def train_main(cfg, task_id='debug'):
 
 if __name__ == '__main__':
     C = get_cfg_defaults()
-    C.DEBUG = True
+    # C.DEBUG = True
     train_main(C)
