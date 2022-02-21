@@ -86,7 +86,7 @@ def get_tune_config_multi_layer(half_score_dict):
             [('x1', 'x2', 'x3', 'x4'), ('x2', 'x3', 'x4'), ('x1', 'x2', 'x3'), ('x2', 'x3')]),
         'MODEL.BACKBONE.LAYER_PATHWAYS': \
             tune.sample_from(lambda spec: 'topdown' if len(spec.config['MODEL.BACKBONE.LAYERS']) > 1 else 'none'),
-        'MODEL.NECK.SPP_LEVELS': tune.grid_search([(1,), (1, 3, 5), (2, 4, 7)]),
+        'MODEL.NECK.SPP_LEVELS': tune.grid_search([(1,), (3,), (5,), (1, 3, 5), (2, 4, 7)]),
     }
 
 
