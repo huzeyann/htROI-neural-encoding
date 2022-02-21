@@ -1,15 +1,61 @@
+DATAMODULE:
+  I_CV_FOLD: -1
+  NUM_CV_SPLITS: 10
+  SPLIT_SCHEMATIC: UBE
 DATASET:
-  NAME: 'Algonauts2021'
-
-  LOAD_PRECOMPUTED_FLOW: True
-  TRANSFORM: 'precomputed'
-  RESOLUTION: 224
   FRAMES: 64
-
+  LOAD_PRECOMPUTED_FLOW: true
+  NAME: Algonauts2021
+  RESOLUTION: 224
+  ROI: WB
+  ROOT_DIR: /home/huze/Algonauts_2021_data/
+  TRANSFORM: precomputed
+  VOXEL_INDEX_DIR: /home/huze/Algonauts_2021_data/voxel_indexs/
+DEBUG: true
+DESCRIPTION: I3D FLOW BASE CONFIG
 MODEL:
   BACKBONE:
-    NAME: 'i3d_flow'
-
+    DISABLE_BN: true
+    LAYER_PATHWAYS: topdown
+    NAME: i3d_flow
+    PRETRAINED: true
   NECK:
-    NECK_TYPE: 'i3dneck'
-
+    FC_ACTIVATION: elu
+    FC_BATCH_NORM: false
+    FC_DROPOUT: 0.0
+    FC_HIDDEN_DIM: 2048
+    FC_NUM_LAYERS: 2
+    FIRST_CONV_SIZE: 256
+    NECK_TYPE: i3dneck
+    POOLING_MODE: max
+  PATH:
+    I3D_FLOW_FILE_PATH: /home/huze/.cache/i3d_flow.pt
+    I3D_RGB_CACHE_DIR: /home/huze/.cache/
+OPTIMIZER:
+  LR: 0.0001
+  NAME: AdaBelief
+  WEIGHT_DECAY: 0.01
+RESULTS_DIR: /data/huze/ray_results/algonauts2021/
+SCHEDULER:
+  NAME: 'no'
+TRAINER:
+  ACCUMULATE_GRAD_BATCHES: 4
+  BATCH_SIZE: 8
+  CALLBACKS:
+    BACKBONE:
+      DEFROST_SCORE: 0.06
+      INITIAL_RATIO_LR: 0.1
+      LR_MULTIPLY_EFFICIENT: 1.6
+      SHOULD_ALIGN: true
+      TRAIN_BN: false
+      VERBOSE: true
+    CHECKPOINT:
+      RM_AT_DONE: true
+      ROOT_DIR: /home/huze/.cache/checkpoints/
+    EARLY_STOP:
+      PATIENCE: 9
+    LOGGER: {}
+  FP16: true
+  GPUS: 1
+  MAX_EPOCHS: 100
+  VAL_CHECK_INTERVAL: 1.0
