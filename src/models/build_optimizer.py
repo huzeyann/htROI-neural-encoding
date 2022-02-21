@@ -12,6 +12,7 @@ def get_adabelief(cfg, optimizer_grouped_parameters):
         optimizer_grouped_parameters,
         lr=cfg.OPTIMIZER.LR,
         weight_decay=cfg.OPTIMIZER.WEIGHT_DECAY,
+        print_change_log=False,
     )
 
 

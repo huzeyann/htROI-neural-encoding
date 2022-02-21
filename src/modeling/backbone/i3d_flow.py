@@ -320,7 +320,7 @@ class I3D(torch.nn.Module):
         self.load_state_dict(state_dict)
 
 def modify_i3d_flow(model, layers):
-    depths = [int(layer[1]) for layer in layers.split(',')]
+    depths = [int(layer[1]) for layer in layers]
     max_depth = np.max(depths)
 
     def forward(self, inp):

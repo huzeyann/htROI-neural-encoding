@@ -1,0 +1,15 @@
+DATASET:
+  NAME: 'Algonauts2021'
+
+  LOAD_PRECOMPUTED_FLOW: True
+  TRANSFORM: 'precomputed'
+  RESOLUTION: 224
+  FRAMES: 64
+
+MODEL:
+  BACKBONE:
+    NAME: 'i3d_flow'
+
+  NECK:
+    NECK_TYPE: 'i3dneck'
+

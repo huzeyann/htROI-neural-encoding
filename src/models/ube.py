@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from torch import nn
 
 from src.config import get_cfg_defaults
+from src.config.config import convert_to_dict
 from src.models.build_backbone import build_backbone
 from src.models.build_neck import build_neck
 from src.models.build_optimizer import build_optimizer
@@ -19,27 +20,22 @@ class UBE(pl.LightningModule):
     def __init__(self, cfg, *args, **kwargs):
         super().__init__()
         self.cfg = cfg
-
-        self.automatic_optimization = True
+        self._cfg_hparams = convert_to_dict(self.cfg.clone())
+        self.save_hyperparameters(self._cfg_hparams)
 
         self.backbone = build_backbone(self.cfg)
         self.neck = build_neck(self.cfg)
 
-        # self.save_hyperparameters(self.cfg)
-
         self.current_val_score = 0  # dirty finetune callback
-
-    def on_train_start(self):
-        # save hparams
-        with open(os.path.join(self.logger[0].log_dir, 'hparams.yaml'), 'w') as f:
-            f.write(self.cfg.clone().dump())
-        # self.logger.log_hyperparams(self.cfg)
-        ...
 
     def forward(self, x):
         x = self.backbone(x)
         out = self.neck(x)
         return out
+
+    def on_train_start(self):
+        self.logger.log_hyperparams(self._cfg_hparams)
+        ...
 
     def _shared_train_val(self, batch, batch_idx, prefix, is_log=True):
         x, y = batch
@@ -76,13 +72,23 @@ class UBE(pl.LightningModule):
             val_outs = torch.cat([out['out'] for out in val_step_outputs], 0).to(self.device)
             val_ys = torch.cat([out['y'] for out in val_step_outputs], 0).to(self.device)
             corr = vectorized_correlation(val_outs, val_ys)
-            mean_corr = corr.mean().item()
+            current_corr = corr.mean().item()
         # print(self.neck.final_fc[-1].weight.data.flatten()[:10])
-        self.current_val_score = mean_corr  # dirty finetune callback
-        self.log(f'val_corr', mean_corr, prog_bar=True, logger=True, sync_dist=False)
+        self.current_val_score = current_corr  # dirty finetune callback
+        self.log(f'val_corr', current_corr, prog_bar=True, logger=True, sync_dist=False)
+
+        best_score = self.trainer.checkpoint_callback.best_model_score
+        best_score = best_score if best_score is not None else -1
+        best_score = best_score if best_score > current_corr else current_corr
+        self.log("hp_metric", best_score, prog_bar=True, logger=True, sync_dist=False)
+        # self.logger.log_hyperparams(self._cfg_hparams, {"hp_metric": best_score})
+
+    # def on_fit_end(self) -> None:
+    #     best_val_corr = self.trainer.checkpoint_callback.best_model_score
+    #     self.log("hp_metric", best_val_corr)
 
     def configure_optimizers(self):
-        """Prepare optimizer and schedule (linear warmup backbone)"""
+        """Prepare optimizer and schedule (warmup backbone)"""
         # no_decay = ["bias", "BatchNorm3D.weight", "BatchNorm1D.weight", "BatchNorm2D.weight"]
         # optimizer_grouped_parameters = [
         #     {
@@ -107,9 +113,9 @@ class UBE(pl.LightningModule):
         #     },
         # ]
 
+        # backbone does not requires_grad at start
         optimizer = build_optimizer(self.cfg, filter(lambda p: p.requires_grad, self.parameters()))
         # optimizer = build_optimizer(self.cfg, optimizer_grouped_parameters)
-                                                            # backbone does not requires_grad at start
 
         return optimizer
 

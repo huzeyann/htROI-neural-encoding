@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name='src',
-    packages=find_packages('src'),
+    packages=find_packages(),
     # install_requires=required,
     version='0.1.0',
 )

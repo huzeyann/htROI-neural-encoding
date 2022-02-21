@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
+from filelock import FileLock
 from torchvision import transforms
 
 
@@ -208,7 +209,7 @@ def modify_resnets(model):
 def modify_resnets_patrial(model, layers):
     del model.fc
     # del modeling.last_linear
-    depths = [int(layer[1]) for layer in layers.split(',')]
+    depths = [int(layer[1]) for layer in layers]
     max_depth = np.max(depths)
 
     def forward(self, x):
@@ -277,7 +278,8 @@ def multi_resnet3d50(num_classes=292, pretrained=True, cache_dir='~/.cache/', **
     """Constructs a ResNet3D-50 modeling."""
     model = modify_resnets(ResNet3D(Bottleneck, [3, 4, 6, 3], num_classes=num_classes, **kwargs))
     if pretrained:
-        model.load_state_dict(load_checkpoint(os.path.join(cache_dir, weights['multi_resnet3d50'])))
+        with FileLock(os.path.expanduser("~/.data.lock")):
+            model.load_state_dict(load_checkpoint(os.path.join(cache_dir, weights['multi_resnet3d50'])))
     return model
 
 

@@ -5,9 +5,10 @@ from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader, Subset
 
 from src.config import get_cfg_defaults
-from src.data.datasets.build_dataset import build_dataset
+from src.data.build_dataset import build_dataset
 from src.data.utils import *
 
+NUM_WORKERS = 4
 
 class MyDataModule(pl.LightningDataModule):
     def __init__(self, cfg):
@@ -35,15 +36,15 @@ class MyDataModule(pl.LightningDataModule):
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size,
-                          shuffle=True, num_workers=8, pin_memory=True, prefetch_factor=2)
+                          shuffle=True, num_workers=NUM_WORKERS, pin_memory=True, prefetch_factor=2)
 
     def val_dataloader(self):
         return DataLoader(self.val_dataset, batch_size=self.batch_size,
-                          shuffle=False, num_workers=8, pin_memory=True, prefetch_factor=2)
+                          shuffle=False, num_workers=NUM_WORKERS, pin_memory=True, prefetch_factor=2)
 
     def predict_dataloader(self):
         return DataLoader(self.predict_dataset, batch_size=self.batch_size,
-                          shuffle=False, num_workers=8, pin_memory=True, prefetch_factor=2)
+                          shuffle=False, num_workers=NUM_WORKERS, pin_memory=True, prefetch_factor=2)
 
 
     def teardown(self, stage: Optional[str] = None):

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
+from filelock import FileLock
 from torch.utils.data import Dataset
 from torchvision import transforms
 from tqdm.auto import tqdm
@@ -55,15 +56,7 @@ class Algonauts2021Dataset(Dataset):
         self.root_dir = Path(self.cfg.DATASET.ROOT_DIR)
         self.raw_dir = Path.joinpath(self.root_dir, 'raw')
         self.processed_dir = Path.joinpath(self.root_dir, 'processed')
-        self.cache_dir = Path.joinpath(self.processed_dir, 'cache')
         self.metadata_file_path = Path.joinpath(self.processed_dir, 'metadata.npy')
-
-        child_dir = [self.cfg.DATASET.NAME,
-                     self.cfg.DATASET.RESOLUTION,
-                     self.cfg.DATASET.FRAMES,
-                     self.cfg.DATASET.TRANSFORM]
-        child_dir = '-'.join([str(item) for item in child_dir])
-        self.sub_cache_dir = Path.joinpath(self.cache_dir, child_dir)
 
     def proc_metadata_and_save_fmri(self):
         """
@@ -120,12 +113,19 @@ class Algonauts2021Dataset(Dataset):
                     raise Exception('flow not precomputed')
                 self.cache_vid_relative_paths.append(flow_path.relative_to(self.root_dir))
         else:
+            self.cache_dir = Path.joinpath(self.processed_dir, 'cache')
             self.cache_dir.mkdir(exist_ok=True)
+            child_dir = [self.cfg.DATASET.NAME,
+                         self.cfg.DATASET.RESOLUTION,
+                         self.cfg.DATASET.FRAMES,
+                         self.cfg.DATASET.TRANSFORM]
+            child_dir = '-'.join([str(item) for item in child_dir])
+            self.sub_cache_dir = Path.joinpath(self.cache_dir, child_dir)
             self.sub_cache_dir.mkdir(exist_ok=True)
 
             self.cache_vid_relative_paths = []
             load_transform = TRANSFORM_REGISTRY[self.cfg.DATASET.TRANSFORM](self.cfg.DATASET.RESOLUTION)
-            for video_relative_path in tqdm(self.video_relative_paths, desc='decode and transform'):
+            for video_relative_path in tqdm(self.video_relative_paths, desc='prepare data'):
                 vid_path = Path.joinpath(self.root_dir, video_relative_path)
                 cache_path = Path.joinpath(self.sub_cache_dir, video_relative_path.name.replace('.mp4', '.npy'))
                 if not cache_path.exists():
@@ -134,15 +134,16 @@ class Algonauts2021Dataset(Dataset):
                 self.cache_vid_relative_paths.append(cache_path.relative_to(self.root_dir))
 
     def load_voxel_index(self):
-        path = Path.joinpath(Path(self.cfg.DATASET.VOXEL_INDEX_DIR), Path(self.cfg.DATASET.ROI+'.pt'))
+        path = Path.joinpath(Path(self.cfg.DATASET.VOXEL_INDEX_DIR), Path(self.cfg.DATASET.ROI + '.pt'))
         self.voxel_index = torch.load(path).numpy()
         self.num_voxels = len(self.voxel_index)
 
     def prepare_data(self):
-        self.proc_metadata_and_save_fmri()
-        self.load_metadata()
-        self.load_and_cache_videos()
-        self.load_voxel_index()
+        with FileLock(os.path.expanduser("~/.data.lock")):
+            self.proc_metadata_and_save_fmri()
+            self.load_metadata()
+            self.load_and_cache_videos()
+            self.load_voxel_index()
 
     def __len__(self):
         if self.is_train:

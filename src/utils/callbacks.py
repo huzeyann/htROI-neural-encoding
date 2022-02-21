@@ -75,6 +75,8 @@ class MyScoreFinetuning(BaseFinetuning):
         self.round = round
         self.verbose = verbose
 
+        self.freeze_flag = True
+
     def on_fit_start(self, trainer, pl_module):
         """
         Raises:
@@ -91,25 +93,27 @@ class MyScoreFinetuning(BaseFinetuning):
 
     def finetune_function(self, pl_module: 'pl.LightningModule', epoch: int, optimizer: Optimizer, opt_idx: int):
         """Called when the epoch begins."""
-        if pl_module.current_val_score >= self.unfreeze_backbone_at_val_score:
-            current_lr = optimizer.param_groups[0]['lr']
-            initial_backbone_lr = self.backbone_initial_lr if self.backbone_initial_lr is not None \
-                else current_lr * self.backbone_initial_ratio_lr
-            self.previous_backbone_lr = initial_backbone_lr
-            self.unfreeze_and_add_param_group(
-                pl_module.backbone,
-                optimizer,
-                initial_backbone_lr,
-                train_bn=self.train_bn,
-                initial_denom_lr=self.initial_denom_lr
-            )
-            if self.verbose:
-                log.info(
-                    f"Current lr: {round(current_lr, self.round)}, "
-                    f"Backbone lr: {round(initial_backbone_lr, self.round)}"
+        if self.freeze_flag:
+            if pl_module.current_val_score >= self.unfreeze_backbone_at_val_score:
+                self.freeze_flag = False
+                current_lr = optimizer.param_groups[0]['lr']
+                initial_backbone_lr = self.backbone_initial_lr if self.backbone_initial_lr is not None \
+                    else current_lr * self.backbone_initial_ratio_lr
+                self.previous_backbone_lr = initial_backbone_lr
+                self.unfreeze_and_add_param_group(
+                    pl_module.backbone,
+                    optimizer,
+                    initial_backbone_lr,
+                    train_bn=self.train_bn,
+                    initial_denom_lr=self.initial_denom_lr
                 )
+                if self.verbose:
+                    log.info(
+                        f"Current lr: {round(current_lr, self.round)}, "
+                        f"Backbone lr: {round(initial_backbone_lr, self.round)}"
+                    )
 
-        elif pl_module.current_val_score > self.unfreeze_backbone_at_val_score:
+        else:
             current_lr = optimizer.param_groups[0]['lr']
             next_current_backbone_lr = self.lambda_func(epoch + 1) * self.previous_backbone_lr
             next_current_backbone_lr = current_lr if (self.should_align and next_current_backbone_lr > current_lr) \

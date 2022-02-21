@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from src.config import get_cfg_defaults
-from src.modeling.components.pyramidpooling3d import SpatialPyramidPooling3D
+from src.modeling.components.pyramidpoolingnd import SpatialPyramidPoolingND
 
 
 class I3DNeck(nn.Module):
@@ -38,16 +38,15 @@ class I3DNeck(nn.Module):
         self.twh_dict = {'x1': self.x1_twh, 'x2': self.x2_twh, 'x3': self.x3_twh, 'x4': self.x4_twh}
         self.c_dict = {'x1': self.x1_c, 'x2': self.x2_c, 'x3': self.x3_c, 'x4': self.x4_c}
         self.planes = self.cfg.MODEL.NECK.FIRST_CONV_SIZE
-        self.pyramid_layers = self.cfg.MODEL.BACKBONE.LAYERS.split(',')  # x1,x2,x3,x4
+        self.pyramid_layers = [xi for xi in self.cfg.MODEL.BACKBONE.LAYERS]  # x1,x2,x3,x4
         self.pyramid_layers.sort()
-        self.pathways = self.cfg.MODEL.BACKBONE.LAYER_PATHWAYS.split(',')  # ['topdown', 'bottomup'] aka 'parallel', or "none"
+        self.pathways = self.cfg.MODEL.BACKBONE.LAYER_PATHWAYS.split(
+            ',')  # ['topdown', 'bottomup'] aka 'parallel', or "none"
         self.is_pyramid = False if self.pathways[0] == 'none' else True
         self.output_size = len(torch.load(Path.joinpath(Path(self.cfg.DATASET.VOXEL_INDEX_DIR),
                                                         Path(self.cfg.DATASET.ROI + '.pt'))))
         self.pooling_mode = self.cfg.MODEL.NECK.POOLING_MODE
-        self.spp_level = self.cfg.MODEL.NECK.SPP_LEVELS
-        self.spp_level = [int(i) for i in self.spp_level.split(',')]
-        self.spp_level = np.array([[1 for _ in self.spp_level], self.spp_level, self.spp_level])
+        self.spp_level = [(1, i, i) for i in self.cfg.MODEL.NECK.SPP_LEVELS]
 
         if self.is_pyramid:
             assert len(self.pathways) >= 1 and self.pathways[0] != 'none'
@@ -64,30 +63,26 @@ class I3DNeck(nn.Module):
             for pathway in self.pathways:
                 k = f'{pathway}_{x_i}'
 
+                # reduce conv channel dimension
                 self.first_convs.update(
                     {k: nn.Conv3d(self.c_dict[x_i], self.planes, kernel_size=1, stride=1)})
 
+                # optional pathways
                 if self.is_pyramid:
                     self.smooths.update(
                         {k: nn.Conv3d(self.planes, self.planes, kernel_size=3, stride=1, padding='same')})
 
                 # SPP
-                self.poolings.update({k: nn.Sequential(
-                    SpatialPyramidPooling3D(self.spp_level,
-                                            self.cfg.MODEL.NECK.POOLING_MODE),
-                    nn.Flatten())})
-                self.fc_input_dims.update({k: np.sum(
-                    self.spp_level[0] * self.spp_level[1] * self.spp_level[2]) * self.planes})
+                spp = SpatialPyramidPoolingND(self.spp_level, mode=self.cfg.MODEL.NECK.POOLING_MODE)
+                self.poolings.update({k: spp})
+                self.fc_input_dims.update({k: spp.get_output_size(self.planes)})
 
-
-
+                # FC first part
                 self.ch_response.update({k: build_fc(
                     self.cfg, self.fc_input_dims[k], self.output_size, part='first')})
 
-        in_size = self.cfg.MODEL.NECK.FC_HIDDEN_DIM * self.num_chs
-
         self.final_fusions = FcFusion(fusion_type='concat')
-
+        in_size = self.cfg.MODEL.NECK.FC_HIDDEN_DIM * self.num_chs
         self.final_fc = build_fc(self.cfg, in_size, self.output_size)
 
     def forward(self, x):
