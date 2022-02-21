@@ -95,6 +95,7 @@ __C.TRAINER.CALLBACKS.CHECKPOINT.RM_AT_DONE = True
 __C.TRAINER.CALLBACKS.LOGGER = ConfigurationNode()
 
 __C.RESULTS_DIR = '/data/huze/ray_results/algonauts2021/' # overwrite by .env
+
 __C.DEBUG = True
 
 def check_cfg(C):

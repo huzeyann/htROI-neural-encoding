@@ -11,7 +11,7 @@ from ray.tune import CLIReporter
 from yacs.config import CfgNode
 
 from src.config import get_cfg_defaults, combine_cfgs
-from src.runner import run_single_train
+from src.grid_runner import run_single_train
 from src.utils.misc import dict_to_list
 
 

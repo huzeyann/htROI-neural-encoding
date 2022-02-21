@@ -14,7 +14,7 @@ from yacs.config import CfgNode
 
 from src.config import get_cfg_defaults
 from src.data.datamodule import MyDataModule
-from src.models.ube import UBE
+from src.models.voxel_encoding_model import VoxelEncodingModel
 from src.utils.callbacks import MyScoreFinetuning
 
 
@@ -66,7 +66,7 @@ def run_single_train(cfg: CfgNode):
         torch.set_printoptions(10)
 
     datamodule = build_dm(cfg)
-    plmodel = UBE(cfg)
+    plmodel = VoxelEncodingModel(cfg)
     loggers = pl_loggers.TensorBoardLogger(save_dir=tune.get_trial_dir(), name="", version=".",
                                            default_hp_metric=False)
     callbacks = build_callbacks(cfg)

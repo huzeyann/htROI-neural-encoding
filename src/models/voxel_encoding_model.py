@@ -15,7 +15,7 @@ from src.models.build_optimizer import build_optimizer
 from src.utils.metrics import vectorized_correlation
 
 
-class UBE(pl.LightningModule):
+class VoxelEncodingModel(pl.LightningModule):
 
     def __init__(self, cfg, *args, **kwargs):
         super().__init__()
@@ -81,45 +81,15 @@ class UBE(pl.LightningModule):
         best_score = best_score if best_score is not None else -1
         best_score = best_score if best_score > current_corr else current_corr
         self.log("hp_metric", best_score, prog_bar=True, logger=True, sync_dist=False)
-        # self.logger.log_hyperparams(self._cfg_hparams, {"hp_metric": best_score})
-
-    # def on_fit_end(self) -> None:
-    #     best_val_corr = self.trainer.checkpoint_callback.best_model_score
-    #     self.log("hp_metric", best_val_corr)
 
     def configure_optimizers(self):
         """Prepare optimizer and schedule (warmup backbone)"""
-        # no_decay = ["bias", "BatchNorm3D.weight", "BatchNorm1D.weight", "BatchNorm2D.weight"]
-        # optimizer_grouped_parameters = [
-        #     {
-        #         "params": [p for n, p in self.backbone.named_parameters() if not any(nd in n for nd in no_decay)],
-        #         "weight_decay": self.cfg.OPTIMIZER.WEIGHT_DECAY,
-        #         'lr': self.cfg.OPTIMIZER.LR * self.cfg.TRAINER.CALLBACKS.BACKBONE.INITIAL_RATIO_LR,
-        #     },
-        #     {
-        #         "params": [p for n, p in self.backbone.named_parameters() if any(nd in n for nd in no_decay)],
-        #         "weight_decay": 0.0,
-        #         'lr': self.cfg.OPTIMIZER.LR * self.cfg.TRAINER.CALLBACKS.BACKBONE.INITIAL_RATIO_LR,
-        #     },
-        #     {
-        #         "params": [p for n, p in self.neck.named_parameters() if not any(nd in n for nd in no_decay)],
-        #         "weight_decay": self.cfg.OPTIMIZER.WEIGHT_DECAY,
-        #         'lr': self.cfg.OPTIMIZER.LR,
-        #     },
-        #     {
-        #         "params": [p for n, p in self.neck.named_parameters() if any(nd in n for nd in no_decay)],
-        #         "weight_decay": 0.0,
-        #         'lr': self.cfg.OPTIMIZER.LR,
-        #     },
-        # ]
-
         # backbone does not requires_grad at start
         optimizer = build_optimizer(self.cfg, filter(lambda p: p.requires_grad, self.parameters()))
-        # optimizer = build_optimizer(self.cfg, optimizer_grouped_parameters)
 
         return optimizer
 
 
 if __name__ == '__main__':
-    model = UBE(get_cfg_defaults())
+    model = VoxelEncodingModel(get_cfg_defaults())
     ...
