@@ -103,7 +103,7 @@ def run_grid(cfg, tune_config, exp_name, resume):
         config=tune_config,
         num_samples=1,
         progress_reporter=CLIReporter(
-            parameter_columns=['MODEL.BACKBONE.NAME', 'DATASET.ROI', 'MODEL.BACKBONE.LAYERS', 'MODEL.NECK.SPP_LEVELS'],
+            parameter_columns=['DATASET.ROI', 'MODEL.BACKBONE.LAYERS', 'MODEL.NECK.SPP_LEVELS'],
             metric_columns=["val_corr", 'hp_metric']
         ),
         name=exp_name,
