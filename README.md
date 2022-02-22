@@ -45,8 +45,9 @@ src
 ```
 
 ```shell
-rsync -avzP src/config/dataset/algonauts2021_roi_voxel_indexs
+cp -r src/config/dataset/algonauts2021_roi_voxel_indexs /home/huze/Algonauts_2021_data/voxel_indexs
 ```
+
 
 ```shell
 git submodule update --init --recursive
