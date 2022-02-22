@@ -101,7 +101,7 @@ class Algonauts2021Dataset(Dataset):
         """
         decode, transform videos, save to cache dir
         """
-        if self.cfg.DATASET.LOAD_PRECOMPUTED_FLOW:
+        if self.cfg.DATASET.TRANSFORM == 'i3d_flow':
             flow_cache_dir = Path.joinpath(self.root_dir, 'precomputed_flow')
             if not flow_cache_dir.exists():
                 raise Exception('flow not precomputed')

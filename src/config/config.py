@@ -27,6 +27,7 @@ __C.DATASET = ConfigurationNode()
 __C.DATASET.NAME = 'Algonauts2021'
 __C.DATASET.ROOT_DIR = os.path.expanduser("~/Algonauts_2021_data/") # overwrite by .env
 __C.DATASET.LOAD_PRECOMPUTED_FLOW = False
+__C.DATASET.register_deprecated_key('LOAD_PRECOMPUTED_FLOW') # use DATASET.TRANSFORM == 'i3d_flow' instead
 __C.DATASET.TRANSFORM = 'i3d_rgb'
 __C.DATASET.RESOLUTION = 224
 __C.DATASET.FRAMES = 16
@@ -39,7 +40,7 @@ __C.MODEL.BACKBONE = ConfigurationNode()
 __C.MODEL.BACKBONE.NAME = 'i3d_rgb'
 __C.MODEL.BACKBONE.PRETRAINED = True
 __C.MODEL.BACKBONE.DISABLE_BN = True
-__C.MODEL.BACKBONE.LAYERS = ('x2', 'x3', 'x4')  # 'x1,x2,x3,x4'
+__C.MODEL.BACKBONE.LAYERS = ('x2', 'x3', 'x4')
 __C.MODEL.BACKBONE.LAYER_PATHWAYS = 'topdown'  # 'none,topdown,bottomup'
 
 __C.MODEL.NECK = ConfigurationNode()
@@ -100,11 +101,9 @@ __C.DEBUG = True
 
 def check_cfg(C):
     if C.DATASET.NAME == 'Algonauts2021':
-        if C.DATASET.LOAD_PRECOMPUTED_FLOW:
+        if C.DATASET.TRANSFORM == 'i3d_flow':
             assert C.DATASET.RESOLUTION == 224
             assert C.DATASET.FRAMES == 64
-        if C.MODEL.BACKBONE.NAME == 'i3d_flow':
-            assert C.DATASET.LOAD_PRECOMPUTED_FLOW
 
         if C.DATAMODULE.SPLIT_SCHEMATIC == 'UBE':
             assert C.DATAMODULE.NUM_CV_SPLITS == 10
