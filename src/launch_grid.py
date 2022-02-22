@@ -44,8 +44,13 @@ def get_parser():
         help="example: `--roi-config src/config/dataset/algonauts2021_roi_defrost_score.json`",
     )
 
-    parser.add_argument('--no-resume', '-nr', dest='resume', action='store_false')
-    parser.set_defaults(resume=True)
+    parser.add_argument(
+        '--resume',
+        choices=["AUTO", "LOCAL", "REMOTE", "PROMPT", "ERRORED_ONLY"],
+        default='AUTO',
+        dest='resume',
+        help='ray.tune(resume=resume).'
+    )
 
     parser.add_argument('--debug', action='store_true')
 
@@ -108,11 +113,11 @@ def run_grid(cfg, tune_config, exp_name, resume):
         ),
         name=exp_name,
         verbose=3,
-        resume='AUTO' if resume else False,
+        resume=resume,
     )
 
 
-def launch_grid(exp_configs: List[str], schematics: List[str], roi_config: str, resume: bool, debug: bool):
+def launch_grid(exp_configs: List[str], schematics: List[str], roi_config: str, resume: str, debug: bool):
     with open(roi_config, 'r') as f:
         half_score_dict = json.load(f)
 
