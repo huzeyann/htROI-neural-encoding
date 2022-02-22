@@ -26,12 +26,10 @@ __C.DATAMODULE.I_CV_FOLD = -1
 __C.DATASET = ConfigurationNode()
 __C.DATASET.NAME = 'Algonauts2021'
 __C.DATASET.ROOT_DIR = os.path.expanduser("~/Algonauts_2021_data/") # overwrite by .env
-__C.DATASET.LOAD_PRECOMPUTED_FLOW = False
-__C.DATASET.register_deprecated_key('LOAD_PRECOMPUTED_FLOW') # use DATASET.TRANSFORM == 'i3d_flow' instead
 __C.DATASET.TRANSFORM = 'i3d_rgb'
 __C.DATASET.RESOLUTION = 224
 __C.DATASET.FRAMES = 16
-__C.DATASET.VOXEL_INDEX_DIR = os.path.expanduser("~/Algonauts_2021_data/voxel_indexs/") # overwrite by .env
+__C.DATASET.VOXEL_INDEX_DIR = 'src/config/dataset/algonauts2021_roi_voxel_indexs/' # overwrite by .env
 __C.DATASET.ROI = 'WB'
 
 __C.MODEL = ConfigurationNode()
@@ -39,6 +37,7 @@ __C.MODEL = ConfigurationNode()
 __C.MODEL.BACKBONE = ConfigurationNode()
 __C.MODEL.BACKBONE.NAME = 'i3d_rgb'
 __C.MODEL.BACKBONE.PRETRAINED = True
+__C.MODEL.BACKBONE.PRETRAINED_WEIGHT_DIR = os.path.expanduser("~/.cache/")
 __C.MODEL.BACKBONE.DISABLE_BN = True
 __C.MODEL.BACKBONE.LAYERS = ('x2', 'x3', 'x4')
 __C.MODEL.BACKBONE.LAYER_PATHWAYS = 'topdown'  # 'none,topdown,bottomup'
@@ -53,10 +52,6 @@ __C.MODEL.NECK.FC_HIDDEN_DIM = 2048
 __C.MODEL.NECK.FC_NUM_LAYERS = 2
 __C.MODEL.NECK.FC_BATCH_NORM = False
 __C.MODEL.NECK.FC_DROPOUT = 0.
-
-__C.MODEL.PATH = ConfigurationNode()
-__C.MODEL.PATH.I3D_RGB_CACHE_DIR = os.path.expanduser("~/.cache/") # overwrite by .env
-__C.MODEL.PATH.I3D_FLOW_FILE_PATH = os.path.expanduser("~/.cache/i3d_flow.pt") # overwrite by .env
 
 # __C.LOGGING_ROI = None
 
@@ -208,8 +203,7 @@ def update_cfg_using_dotenv() -> list:
     list_key_env = {
         "DATASET.ROOT_DIR",
         "DATASET.VOXEL_INDEX_DIR",
-        "MODEL.PATH.I3D_RGB_CACHE_DIR",
-        "MODEL.PATH.I3D_FLOW_FILE_PATH",
+        "MODEL.BACKBONE.PRETRAINED_WEIGHT_DIR",
         "TRAINER.CALLBACKS.CHECKPOINT.ROOT_DIR",
         "RESULTS_DIR",
     }

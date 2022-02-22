@@ -43,3 +43,30 @@ src
 └── visualization                <- Scripts for exploratory results & visualizations 
        └── visualize.py
 ```
+
+```shell
+rsync -avzP src/config/dataset/algonauts2021_roi_voxel_indexs
+```
+
+```shell
+git submodule update --init --recursive
+cd video_features
+
+rsync -avzP models/i3d/checkpoints/i3d_flow.pt /home/huze/.cache/i3d_flow.pt
+
+find /home/huze/Algonauts_2021_data/raw/AlgonautsVideos268_All_30fpsmax/ -name '*.mp4' > path.txt
+python main.py \
+ --feature_type my \
+ --file_with_video_paths path.txt \
+ --device_ids 0 \
+ --tmp_path /tmp \
+ --on_extraction save_numpy \
+ --output_path ./output \
+ --extraction_fps 22 \
+ --streams flow \
+ --flow_type raft
+
+mv ./output/my /home/huze/Algonauts_2021_data/precomputed_flow
+```
+
+Note: ignore env config in `video_features`

@@ -18,6 +18,7 @@ MODEL:
     LAYER_PATHWAYS: topdown
     NAME: i3d_flow
     PRETRAINED: true
+    PRETRAINED_WEIGHT_DIR: /home/huze/.cache/
   NECK:
     FC_ACTIVATION: elu
     FC_BATCH_NORM: false
@@ -27,9 +28,6 @@ MODEL:
     FIRST_CONV_SIZE: 256
     NECK_TYPE: i3dneck
     POOLING_MODE: max
-  PATH:
-    I3D_FLOW_FILE_PATH: /home/huze/.cache/i3d_flow.pt
-    I3D_RGB_CACHE_DIR: /home/huze/.cache/
 OPTIMIZER:
   LR: 0.0001
   NAME: AdaBelief
