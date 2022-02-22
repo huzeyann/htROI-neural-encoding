@@ -9,7 +9,7 @@ DATASET:
   ROI: WB
   ROOT_DIR: /home/huze/Algonauts_2021_data/
   TRANSFORM: i3d_flow
-  VOXEL_INDEX_DIR: /home/huze/Algonauts_2021_data/voxel_indexs/
+  VOXEL_INDEX_DIR: src/config/dataset/algonauts2021_roi_voxel_indexs/
 DEBUG: true
 DESCRIPTION: I3D FLOW BASE CONFIG
 MODEL:
