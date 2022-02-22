@@ -1,11 +1,12 @@
+from torch import Tensor
 
 
-def vectorized_correlation(x, y):
+def vectorized_correlation(x: Tensor, y: Tensor) -> Tensor:
     """
 
     :param x: Tensor shape [num_samples, num_voxels]
     :param y: Tensor shape [num_samples, num_voxels]
-    :return: 
+    :return: shape [num_voxels, ]
     """
 
     dim = 0

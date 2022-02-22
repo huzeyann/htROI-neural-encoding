@@ -53,8 +53,6 @@ cp -r src/config/dataset/algonauts2021_roi_voxel_indexs /home/huze/Algonauts_202
 git submodule update --init --recursive
 cd video_features
 
-rsync -avzP models/i3d/checkpoints/i3d_flow.pt /home/huze/.cache/i3d_flow.pt
-
 find /home/huze/Algonauts_2021_data/raw/AlgonautsVideos268_All_30fpsmax/ -name '*.mp4' > path.txt
 python main.py \
  --feature_type my \
@@ -68,6 +66,8 @@ python main.py \
  --flow_type raft
 
 mv ./output/my /home/huze/Algonauts_2021_data/precomputed_flow
+cp models/i3d/checkpoints/i3d_flow.pt /home/huze/.cache/i3d_flow.pt
+
 ```
 
 Note: ignore env config in `video_features`

@@ -2,6 +2,7 @@ absl-py==1.0.0
 adabelief-pytorch==0.2.1
 aiohttp==3.8.1
 aiosignal==1.2.0
+antlr4-python3-runtime==4.8
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
 asttokens==2.0.5
@@ -19,6 +20,7 @@ clearml==1.1.6
 clearml-agent==1.1.2
 click==8.0.4
 colorama==0.4.4
+cycler==0.11.0
 debugpy==1.5.1
 decorator==5.1.1
 decord==0.6.0
@@ -29,6 +31,7 @@ dpcpp-cpp-rt==2022.0.2
 entrypoints==0.4
 executing==0.8.2
 filelock==3.6.0
+fonttools==4.29.1
 frozenlist==1.3.0
 fsspec==2022.1.0
 furl==2.1.3
@@ -56,8 +59,12 @@ jupyter-console==6.4.0
 jupyter-core==4.9.2
 jupyterlab-pygments==0.1.2
 jupyterlab-widgets==1.0.2
+jupyterthemes==0.20.0
+kiwisolver==1.3.2
+lesscpy==0.15.0
 Markdown==3.3.6
 MarkupSafe==2.1.0
+matplotlib==3.5.1
 matplotlib-inline==0.1.3
 mistune==0.8.4
 mkl==2022.0.2
@@ -73,6 +80,8 @@ nest-asyncio==1.5.4
 notebook==6.4.8
 numpy==1.21.5
 oauthlib==3.2.0
+omegaconf==2.1.1
+opencv-python==4.5.5.62
 opencv-python-headless==4.5.5.62
 orderedmultidict==1.0.1
 packaging==21.3
@@ -85,6 +94,7 @@ pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==8.4.0
 platformdirs==2.5.0
+ply==3.11
 prometheus-client==0.13.1
 prompt-toolkit==3.0.28
 protobuf==3.19.4
