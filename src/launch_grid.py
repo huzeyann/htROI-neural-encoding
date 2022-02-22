@@ -47,7 +47,7 @@ def get_parser():
     parser.add_argument(
         '--resume',
         choices=["AUTO", "LOCAL", "REMOTE", "PROMPT", "ERRORED_ONLY"],
-        default='AUTO',
+        default='ERRORED_ONLY',
         dest='resume',
         help='ray.tune(resume=resume).'
     )
