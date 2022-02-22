@@ -96,6 +96,11 @@ __C.DEBUG = True
 
 def check_cfg(C):
     if C.DATASET.NAME == 'Algonauts2021':
+        if C.MODEL.BACKBONE.NAME == 'i3d_rgb':
+            assert C.DATASET.TRANSFORM == 'i3d_rgb'
+        if C.MODEL.BACKBONE.NAME == 'i3d_flow':
+            assert C.DATASET.TRANSFORM == 'i3d_flow'
+
         if C.DATASET.TRANSFORM == 'i3d_flow':
             assert C.DATASET.RESOLUTION == 224
             assert C.DATASET.FRAMES == 64
@@ -181,6 +186,8 @@ def combine_cfgs(path_cfg_data: Path = None,
     list_cfg = update_cfg_using_dotenv()
     if list_cfg is not []:
         cfg_base.merge_from_list(list_cfg)
+
+    check_cfg(cfg_base)
 
     return cfg_base
 
