@@ -57,6 +57,7 @@ class Algonauts2021Dataset(Dataset):
         self.raw_dir = Path.joinpath(self.root_dir, 'raw')
         self.processed_dir = Path.joinpath(self.root_dir, 'processed')
         self.metadata_file_path = Path.joinpath(self.processed_dir, 'metadata.npy')
+        self.voxel_mask_path = Path.joinpath(self.processed_dir, 'voxel_masks.npy')
 
     def proc_metadata_and_save_fmri(self):
         """
@@ -90,6 +91,8 @@ class Algonauts2021Dataset(Dataset):
             np.save(path, fmris[i])
             relative_path = path.relative_to(self.root_dir)
             fmri_relative_paths.append(relative_path)
+
+        np.save(self.voxel_mask_path, voxel_masks)
 
         metadata = (video_relative_paths, fmri_relative_paths)
         np.save(self.metadata_file_path, metadata)

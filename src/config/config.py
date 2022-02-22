@@ -29,7 +29,7 @@ __C.DATASET.ROOT_DIR = os.path.expanduser("~/Algonauts_2021_data/") # overwrite 
 __C.DATASET.TRANSFORM = 'i3d_rgb'
 __C.DATASET.RESOLUTION = 224
 __C.DATASET.FRAMES = 16
-__C.DATASET.VOXEL_INDEX_DIR = 'src/config/dataset/algonauts2021_roi_voxel_indexs/' # overwrite by .env
+__C.DATASET.VOXEL_INDEX_DIR = os.path.expanduser("~/Algonauts_2021_data/voxel_indexs/") # overwrite by .env
 __C.DATASET.ROI = 'WB'
 
 __C.MODEL = ConfigurationNode()
