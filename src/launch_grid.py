@@ -19,29 +19,26 @@ def get_parser():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--exp-configs", "-e",
-        nargs='+',
-        dest='exp_configs',
-        default=[],
+        "--exp-config", "-e",
+        dest='exp_config',
         required=True,
-        help="path(s) to config yaml containing info about experiment. example: `--exp-configs src/config/experiments/algonauts2021_i3d_rgb.yml`",
+        help="path) to config yaml containing info about experiment. example: `--exp-config src/config/experiments/algonauts2021_i3d_rgb.yml`",
     )
 
     parser.add_argument(
-        "--schematics", "-s",
-        nargs='+',
-        dest='schematics',
-        default=[],
+        "--schematic", "-s",
+        choices=["single_layer", "multi_layer",],
+        dest='schematic',
+        default='single_layer',
         required=True,
-        help="`single_layer` or `multi_layer`, or `single_layer multi_layer`. example: `--schematics single_layer multi_layer`",
     )
 
     parser.add_argument(
         "--roi-config", "-r",
         dest='roi_config',
-        default='src/config/dataset/algonauts2021_roi_defrost_score.json',
+        default='src/config/dataset/algonauts2021_i3d_rgb_defrost_score.json',
         required=False,
-        help="example: `--roi-config src/config/dataset/algonauts2021_roi_defrost_score.json`",
+        help="example: `--roi-config src/config/dataset/algonauts2021_i3d_rgb_defrost_score.json`",
     )
 
     parser.add_argument(
@@ -117,31 +114,30 @@ def run_grid(cfg, tune_config, exp_name, resume):
     )
 
 
-def launch_grid(exp_configs: List[str], schematics: List[str], roi_config: str, resume: str, debug: bool):
+def launch_grid(exp_config: str, schematic: str, roi_config: str, resume: str, debug: bool):
     with open(roi_config, 'r') as f:
-        half_score_dict = json.load(f)
+        deforst_score_dict = json.load(f)
 
+    # ray.init(local_mode=True)
     if debug:
         ray.init(local_mode=True)
 
-    for exp_config in exp_configs:
-        exp_config_path = Path(exp_config)
-        cfg = combine_cfgs(
-            path_cfg_data=exp_config_path,
-            list_cfg_override=['DEBUG', debug]
-        )
+    exp_config_path = Path(exp_config)
+    cfg = combine_cfgs(
+        path_cfg_data=exp_config_path,
+        list_cfg_override=['DEBUG', debug]
+    )
 
-        for sch in schematics:
 
-            if sch == 'single_layer':
-                tune_config = get_tune_config_single_layer(half_score_dict)
-            elif sch == 'multi_layer':
-                tune_config = get_tune_config_multi_layer(half_score_dict)
-            else:
-                NotImplementedError()
+    if schematic == 'single_layer':
+        tune_config = get_tune_config_single_layer(deforst_score_dict)
+    elif schematic == 'multi_layer':
+        tune_config = get_tune_config_multi_layer(deforst_score_dict)
+    else:
+        NotImplementedError()
 
-            name = exp_config_path.name.split('.')[0] + '-' + sch
-            run_grid(cfg, tune_config, name, resume)
+    name = exp_config_path.name.split('.')[0] + '-' + schematic
+    run_grid(cfg, tune_config, name, resume)
 
 
 if __name__ == '__main__':
