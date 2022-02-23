@@ -116,7 +116,7 @@ def run_grid(cfg, tune_config, exp_name, resume):
 
 def launch_grid(exp_config: str, schematic: str, roi_config: str, resume: str, debug: bool):
     with open(roi_config, 'r') as f:
-        deforst_score_dict = json.load(f)
+        deforest_score_dict = json.load(f)
 
     # ray.init(local_mode=True)
     if debug:
@@ -130,9 +130,9 @@ def launch_grid(exp_config: str, schematic: str, roi_config: str, resume: str, d
 
 
     if schematic == 'single_layer':
-        tune_config = get_tune_config_single_layer(deforst_score_dict)
+        tune_config = get_tune_config_single_layer(deforest_score_dict)
     elif schematic == 'multi_layer':
-        tune_config = get_tune_config_multi_layer(deforst_score_dict)
+        tune_config = get_tune_config_multi_layer(deforest_score_dict)
     else:
         NotImplementedError()
 
