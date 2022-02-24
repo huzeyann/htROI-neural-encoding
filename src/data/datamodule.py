@@ -8,7 +8,7 @@ from src.config import get_cfg_defaults
 from src.data.build_dataset import build_dataset
 from src.data.utils import *
 
-NUM_WORKERS = 4
+NUM_WORKERS = 1
 
 class MyDataModule(pl.LightningDataModule):
     def __init__(self, cfg):
