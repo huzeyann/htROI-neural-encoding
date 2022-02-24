@@ -27,7 +27,7 @@ def get_parser():
 
     parser.add_argument(
         "--schematic", "-s",
-        choices=["single_layer", "multi_layer",],
+        choices=["single_layer", "multi_layer", ],
         dest='schematic',
         default='single_layer',
         required=True,
@@ -85,10 +85,11 @@ def get_tune_config_multi_layer(half_score_dict):
         'TRAINER.CALLBACKS.BACKBONE.DEFROST_SCORE': \
             tune.sample_from(lambda spec: half_score_dict[spec.config['DATASET.ROI']]),
         'MODEL.BACKBONE.LAYERS': tune.grid_search(
-            [('x1', 'x2', 'x3', 'x4'), ('x2', 'x3', 'x4'), ('x1', 'x2', 'x3'), ('x2', 'x3')]),
+            [('x1', 'x2', 'x3', 'x4'), ('x1', 'x2', 'x3'), ('x2', 'x3', 'x4'),
+             ('x1', 'x2'), ('x2', 'x3'), ('x3', 'x4')]),
         'MODEL.BACKBONE.LAYER_PATHWAYS': \
             tune.sample_from(lambda spec: 'topdown' if len(spec.config['MODEL.BACKBONE.LAYERS']) > 1 else 'none'),
-        'MODEL.NECK.SPP_LEVELS': tune.grid_search([(1,), (3,), (5,), (1, 3, 5), (2, 4, 7)]),
+        'MODEL.NECK.SPP_LEVELS': tune.grid_search([(1, 3, 5), (2, 4, 7)]),
     }
 
 
@@ -127,7 +128,6 @@ def launch_grid(exp_config: str, schematic: str, roi_config: str, resume: str, d
         path_cfg_data=exp_config_path,
         list_cfg_override=['DEBUG', debug]
     )
-
 
     if schematic == 'single_layer':
         tune_config = get_tune_config_single_layer(deforest_score_dict)

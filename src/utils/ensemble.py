@@ -12,9 +12,10 @@ def optimize_val_correlation(vals: Tensor, y: Tensor, device='cpu', verbose=Fals
 
     return: ws: shape [num_models, ]
     """
+    torch.cuda.empty_cache()
     with torch.no_grad():
-        vals = vals.clone().to(device).float()
-        y = y.clone().to(device).float()
+        vals = vals.to(device)
+        y = y.to(device)
 
         def correlation_evaluation_function(ws):
             ws = torch.tensor(ws).float().to(device)
@@ -34,8 +35,7 @@ def optimize_val_correlation(vals: Tensor, y: Tensor, device='cpu', verbose=Fals
         ws /= ws.sum()  # sum to 1
         ws = torch.tensor(ws).float()
 
-        del vals
-        del y
-        torch.cuda.empty_cache()
+        # vals = vals.to('cpu')
+        # y = y.to('cpu')
 
     return ws
