@@ -1,5 +1,3 @@
-import os
-from abc import ABC
 from typing import Any, Optional
 
 import pytorch_lightning as pl
@@ -9,9 +7,9 @@ from torch import nn
 
 from src.config import get_cfg_defaults
 from src.config.config import convert_to_dict
-from src.models.build_backbone import build_backbone
-from src.models.build_neck import build_neck
-from src.models.build_optimizer import build_optimizer
+from src.modeling.backbone.build_backbone import build_backbone
+from src.modeling.neck.build_neck import build_neck
+from src.modeling.components.build_optimizer import build_optimizer
 from src.utils.metrics import vectorized_correlation
 
 
@@ -50,7 +48,7 @@ class VoxelEncodingModel(pl.LightningModule):
         if self.cfg.MODEL.BACKBONE.DISABLE_BN:
             def disable_bn(model):
                 for module in model.modules():
-                    if isinstance(module, nn.BatchNorm3d):
+                    if isinstance(module, nn.BatchNorm3d) or isinstance(module, nn.BatchNorm2d):
                         module.eval()
 
             self.backbone.apply(disable_bn)
@@ -73,8 +71,7 @@ class VoxelEncodingModel(pl.LightningModule):
             val_ys = torch.cat([out['y'] for out in val_step_outputs], 0).to(self.device)
             corr = vectorized_correlation(val_outs, val_ys)
             current_corr = corr.mean().item()
-        # print(self.neck.final_fc[-1].weight.data.flatten()[:10])
-        self.current_val_score = current_corr  # dirty finetune callback
+        self.current_val_score = current_corr  # for my dirty finetune callback
         self.log(f'val_corr', current_corr, prog_bar=True, logger=True, sync_dist=False)
 
         best_score = self.trainer.checkpoint_callback.best_model_score
