@@ -48,6 +48,9 @@ src
 conda create -n my_env python=3.8.8
 conda activate my_env
 pip3 install torch==1.10.2+cu113 torchvision==0.11.3+cu113 torchaudio==0.10.2+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+pip install -r requirements.txt
+# if tqdm_notebook is not displaying widgets
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
 ```
 
 ```shell
