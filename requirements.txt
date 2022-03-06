@@ -23,6 +23,7 @@ clearml-agent==1.1.2
 click==8.0.4
 colorama==0.4.4
 cycler==0.11.0
+Cython==0.29.28
 debugpy==1.5.1
 decorator==5.1.1
 decord==0.6.0
@@ -41,7 +42,10 @@ future==0.18.2
 google-auth==2.6.0
 google-auth-oauthlib==0.4.6
 grpcio==1.44.0
+h5py==3.6.0
+html5lib==1.1
 idna==2.10
+imageio==2.16.1
 importlib-metadata==4.11.1
 intel-cmplr-lib-rt==2022.0.2
 intel-cmplr-lic-rt==2022.0.2
@@ -69,12 +73,14 @@ jupyterlab-widgets==1.0.2
 jupyterthemes==0.20.0
 kiwisolver==1.3.2
 lesscpy==0.15.0
+lxml==4.8.0
 Markdown==3.3.6
 MarkupSafe==2.1.0
 matplotlib==3.5.1
 matplotlib-inline==0.1.3
 mistune==0.8.4
 mkl==2022.0.2
+mkl-fft==1.3.1
 mkl-service==2.4.0
 msgpack==1.0.3
 multidict==6.0.2
@@ -84,8 +90,12 @@ nbclient==0.5.11
 nbconvert==6.4.2
 nbformat==5.1.3
 nest-asyncio==1.5.4
+networkx==2.7
+nibabel==3.2.2
+nilearn==0.9.0
 notebook==6.4.8
-numpy
+numexpr==2.8.1
+numpy==1.22.2
 oauthlib==3.2.0
 omegaconf==2.1.1
 opencv-python==4.5.5.62
@@ -110,6 +120,7 @@ ptyprocess==0.7.0
 pure-eval==0.2.2
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
+pycortex==1.2.3
 pycparser==2.21
 pyDeprecate==0.3.1
 Pygments==2.11.2
@@ -133,6 +144,7 @@ scikit-learn==1.0.2
 scipy==1.8.0
 seaborn==0.11.2
 Send2Trash==1.8.0
+Shapely==1.8.1.post1
 six==1.15.0
 sniffio==1.2.0
 stack-data==0.2.0
@@ -161,6 +173,7 @@ wcwidth==0.2.5
 webencodings==0.5.1
 websocket-client==1.2.3
 Werkzeug==2.0.3
+wget==3.2
 widgetsnbextension==3.5.2
 wrapt==1.13.3
 yacs==0.1.8

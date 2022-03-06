@@ -1,12 +1,13 @@
 from typing import Optional
 
+import numpy as np
 import pytorch_lightning as pl
 from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader, Subset
 
 from src.config import get_cfg_defaults
 from src.data.build_dataset import build_dataset
-from src.data.utils import *
+# from src.data.utils import *
 
 NUM_WORKERS = 1
 
