@@ -1,0 +1,61 @@
+DATAMODULE:
+  I_CV_FOLD: -1
+  NUM_CV_SPLITS: 10
+DATASET:
+  FRAMES: 4
+  NAME: Algonauts2021
+  RESOLUTION: 224
+  ROI: WB
+  ROOT_DIR: /home/huze/Algonauts_2021_data/
+  TRANSFORM: audio_mel
+  VOXEL_INDEX_DIR: /home/huze/Algonauts_2021_data/voxel_indexs/
+DEBUG: false
+DESCRIPTION: Audio VGG BASE CONFIG
+MODEL:
+  BACKBONE:
+    DISABLE_BN: true
+    LAYER_PATHWAYS: none
+    NAME: audio_vggish
+    PRETRAINED: true
+    PRETRAINED_WEIGHT_DIR: /home/huze/.cache/
+  NECK:
+    SPP_LEVELS:
+      - 1
+      - 2
+      - 4
+      - 6
+    FC_ACTIVATION: elu
+    FC_BATCH_NORM: false
+    FC_DROPOUT: 0.0
+    FC_HIDDEN_DIM: 2048
+    FC_NUM_LAYERS: 2
+    FIRST_CONV_SIZE: 1
+    NECK_TYPE: audio_neck
+OPTIMIZER:
+  LR: 0.0001
+  NAME: AdaBelief
+  WEIGHT_DECAY: 0.01
+RESULTS_DIR: /data/huze/ray_results/algonauts2021/
+SCHEDULER:
+  NAME: 'no'
+TRAINER:
+  ACCUMULATE_GRAD_BATCHES: 4
+  BATCH_SIZE: 8
+  CALLBACKS:
+    BACKBONE:
+      DEFROST_SCORE: 0.015
+      INITIAL_RATIO_LR: 0.1
+      LR_MULTIPLY_EFFICIENT: 1.5
+      SHOULD_ALIGN: true
+      TRAIN_BN: false
+      VERBOSE: true
+    CHECKPOINT:
+      RM_AT_DONE: true
+      ROOT_DIR: /home/huze/.cache/checkpoints/
+    EARLY_STOP:
+      PATIENCE: 6
+    LOGGER: {}
+  FP16: true
+  GPUS: 1
+  MAX_EPOCHS: 100
+  VAL_CHECK_INTERVAL: 1.0

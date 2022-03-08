@@ -3,43 +3,11 @@ from pathlib import Path
 import pandas as pd
 from filelock import FileLock
 from torch.utils.data import Dataset
-from torchvision import transforms
 from tqdm.auto import tqdm
 
 from src.config import get_cfg_defaults
+from src.data.datasets.transforms import get_transform
 from src.data.utils import *
-from src.utils.rigistry import Registry
-
-TRANSFORM_REGISTRY = Registry()
-
-
-@TRANSFORM_REGISTRY.register('i3d_rgb')
-def get_i3d_rgb_mmit_transform(resolution):
-    return transforms.Compose([
-        transforms.Resize((resolution, resolution)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ])
-
-
-@TRANSFORM_REGISTRY.register('bdcn')
-def get_bdcn_edge_transform(resolution):
-    return transforms.Compose([
-        transforms.Resize((resolution, resolution)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.4810938, 0.45752459, 0.40787055], [1, 1, 1]),
-        RGB2BGR(),
-        TwoFiveFive(),
-    ])
-
-
-@TRANSFORM_REGISTRY.register('bit')
-def get_bit_transform(resolution):
-    return transforms.Compose([
-        transforms.Resize((resolution, resolution)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
-    ])
 
 
 class Algonauts2021Dataset(Dataset):
@@ -102,9 +70,11 @@ class Algonauts2021Dataset(Dataset):
 
     def load_and_cache_videos(self):
         """
+        Algonauts2021 dataset is reasonable small, save transformed video to cache to reduce cpu load for decoding videos
         decode, transform videos, save to cache dir
         """
         if self.cfg.DATASET.TRANSFORM == 'i3d_flow':
+            # optical flow is precomputed by `video_features`
             flow_cache_dir = Path.joinpath(self.root_dir, 'precomputed_flow')
             if not flow_cache_dir.exists():
                 raise Exception('flow not precomputed')
@@ -115,6 +85,28 @@ class Algonauts2021Dataset(Dataset):
                 if not flow_path.exists():
                     raise Exception('flow not precomputed')
                 self.cache_vid_relative_paths.append(flow_path.relative_to(self.root_dir))
+        elif self.cfg.DATASET.TRANSFORM == 'audio_mel':
+            self.cache_dir = Path.joinpath(self.processed_dir, 'cache')
+            self.cache_dir.mkdir(exist_ok=True)
+            child_dir = [self.cfg.DATASET.NAME,
+                         self.cfg.DATASET.TRANSFORM]
+            child_dir = '-'.join([str(item) for item in child_dir])
+            self.sub_cache_dir = Path.joinpath(self.cache_dir, child_dir)
+            self.sub_cache_dir.mkdir(exist_ok=True)
+
+            self.wav_cache_dir = self.sub_cache_dir.joinpath(Path('wavs'))
+            self.wav_cache_dir.mkdir(exist_ok=True)
+
+            self.cache_vid_relative_paths = []
+            for video_relative_path in tqdm(self.video_relative_paths, desc='prepare data'):
+                vid_path = Path.joinpath(self.root_dir, video_relative_path)
+                cache_path = Path.joinpath(self.sub_cache_dir, video_relative_path.name.replace('.mp4', '.npy'))
+                if not cache_path.exists():
+                    vid = load_audio(str(vid_path), tmp_dir=str(self.wav_cache_dir), shape=(3, 96, 64))
+                    np.save(cache_path, vid.numpy().astype(np.float32))
+                self.cache_vid_relative_paths.append(cache_path.relative_to(self.root_dir))
+
+            self.wav_cache_dir.rmdir()
         else:
             self.cache_dir = Path.joinpath(self.processed_dir, 'cache')
             self.cache_dir.mkdir(exist_ok=True)
@@ -127,7 +119,7 @@ class Algonauts2021Dataset(Dataset):
             self.sub_cache_dir.mkdir(exist_ok=True)
 
             self.cache_vid_relative_paths = []
-            load_transform = TRANSFORM_REGISTRY[self.cfg.DATASET.TRANSFORM](self.cfg.DATASET.RESOLUTION)
+            load_transform = get_transform(self.cfg.DATASET.TRANSFORM)(self.cfg.DATASET.RESOLUTION)
             for video_relative_path in tqdm(self.video_relative_paths, desc='prepare data'):
                 vid_path = Path.joinpath(self.root_dir, video_relative_path)
                 cache_path = Path.joinpath(self.sub_cache_dir, video_relative_path.name.replace('.mp4', '.npy'))
@@ -203,7 +195,7 @@ class Algonauts2021Dataset(Dataset):
 
 if __name__ == '__main__':
     C = get_cfg_defaults()
-    # C.merge_from_list(['DATASET.TRANSFORM', 'precomputed_flow'])
+    C.merge_from_list(['DATASET.TRANSFORM', 'audio_mel'])
     d = Algonauts2021Dataset(C)
     d.prepare_data()
     vid, fmri = d.__getitem__(0)

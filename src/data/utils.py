@@ -9,6 +9,19 @@ import numpy as np
 import torch
 from PIL import Image
 from decord import VideoReader, cpu
+from skimage import color
+
+from src.modeling.backbone.vggish_audio.utils.utils import extract_wav_from_mp4
+from src.modeling.backbone.vggish_audio.vggish.vggish_input import wavfile_to_examples
+
+
+class RGB2LAB_L(torch.nn.Module):
+    def forward(self, tensor):
+        out = torch.tensor(color.rgb2lab(tensor)[..., 0]).unsqueeze(0)
+        return out
+
+    def __repr__(self):
+        return self.__class__.__name__
 
 
 class TensorCenterCrop(object):
@@ -178,6 +191,23 @@ def load_video(file, num_frames, load_transform):
     vid = torch.stack(images, 0)
     vid = vid.moveaxis(0, 1)
     return vid
+
+def load_audio(mp4_path, tmp_dir, shape=(3, 96, 64)):
+    mp4_path = str(mp4_path)
+    try:
+        wav, aac = extract_wav_from_mp4(mp4_path, tmp_dir)
+        data = wavfile_to_examples(wav)
+
+        os.remove(wav)
+        os.remove(aac)
+    except Exception as e:
+        # no audio
+        print(e)
+        print('maybe there is no audio in that video, filling with 0s')
+        data = np.zeros(shape)
+    assert data.shape == shape
+    data = torch.tensor(data).unsqueeze(1).float()
+    return data
 
 
 def load_dict(filename_):

@@ -1,22 +1,21 @@
 DATAMODULE:
   I_CV_FOLD: -1
   NUM_CV_SPLITS: 10
-  SPLIT_SCHEMATIC: UBE
 DATASET:
-  FRAMES: 16
+  FRAMES: 4
   NAME: Algonauts2021
   RESOLUTION: 224
   ROI: WB
   ROOT_DIR: /home/huze/Algonauts_2021_data/
-  TRANSFORM: i3d_rgb
+  TRANSFORM: standard_rgb
   VOXEL_INDEX_DIR: /home/huze/Algonauts_2021_data/voxel_indexs/
 DEBUG: true
-DESCRIPTION: I3D RGB BASE CONFIG
+DESCRIPTION: Moby SwinTransformer-T SSL BASE CONFIG
 MODEL:
   BACKBONE:
     DISABLE_BN: true
-    LAYER_PATHWAYS: topdown
-    NAME: i3d_rgb
+    LAYER_PATHWAYS: none
+    NAME: 2d_moby_swin_warp_3d
     PRETRAINED: true
     PRETRAINED_WEIGHT_DIR: /home/huze/.cache/
   NECK:
@@ -26,8 +25,11 @@ MODEL:
     FC_HIDDEN_DIM: 2048
     FC_NUM_LAYERS: 2
     FIRST_CONV_SIZE: 256
-    NECK_TYPE: i3dneck
-    POOLING_MODE: max
+    NECK_TYPE: lstm_neck
+    LSTM:
+      HIDDEN_SIZE: 2048
+      NUM_LAYERS: 1
+      BIDIRECTIONAL: false
 OPTIMIZER:
   LR: 0.0001
   NAME: AdaBelief
@@ -36,8 +38,8 @@ RESULTS_DIR: /data/huze/ray_results/algonauts2021/
 SCHEDULER:
   NAME: 'no'
 TRAINER:
-  ACCUMULATE_GRAD_BATCHES: 4
-  BATCH_SIZE: 8
+  ACCUMULATE_GRAD_BATCHES: 16
+  BATCH_SIZE: 2
   CALLBACKS:
     BACKBONE:
       DEFROST_SCORE: 0.06
@@ -50,7 +52,7 @@ TRAINER:
       RM_AT_DONE: true
       ROOT_DIR: /home/huze/.cache/checkpoints/
     EARLY_STOP:
-      PATIENCE: 9
+      PATIENCE: 6
     LOGGER: {}
   FP16: true
   GPUS: 1

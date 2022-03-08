@@ -48,7 +48,9 @@ class VoxelEncodingModel(pl.LightningModule):
         if self.cfg.MODEL.BACKBONE.DISABLE_BN:
             def disable_bn(model):
                 for module in model.modules():
-                    if isinstance(module, nn.BatchNorm3d) or isinstance(module, nn.BatchNorm2d):
+                    if isinstance(module, nn.BatchNorm3d) \
+                            or isinstance(module, nn.BatchNorm2d) \
+                            or isinstance(module, nn.BatchNorm1d):
                         module.eval()
 
             self.backbone.apply(disable_bn)

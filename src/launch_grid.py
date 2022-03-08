@@ -22,7 +22,7 @@ def get_parser():
         "--exp-config", "-e",
         dest='exp_config',
         required=True,
-        help="path) to config yaml containing info about experiment. example: `--exp-config src/config/experiments/algonauts2021_i3d_rgb.yml`",
+        help="path) to config yaml containing info about experiment. example: `--exp-config src/config/experiments/algonauts2021_3d_resnet.yml`",
     )
 
     parser.add_argument(
@@ -36,9 +36,9 @@ def get_parser():
     parser.add_argument(
         "--roi-config", "-r",
         dest='roi_config',
-        default='src/config/dataset/algonauts2021_i3d_rgb_defrost_score.json',
+        default='src/config/dataset/algonauts2021_3d_resnet_defrost_score.json',
         required=False,
-        help="example: `--roi-config src/config/dataset/algonauts2021_i3d_rgb_defrost_score.json`",
+        help="example: `--roi-config src/config/dataset/algonauts2021_3d_resnet_defrost_score.json`",
     )
 
     parser.add_argument(

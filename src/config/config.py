@@ -19,7 +19,6 @@ cfg = __C
 __C.DESCRIPTION = 'Default config'
 
 __C.DATAMODULE = ConfigurationNode()
-__C.DATAMODULE.SPLIT_SCHEMATIC = 'UBE'
 __C.DATAMODULE.NUM_CV_SPLITS = 10
 __C.DATAMODULE.I_CV_FOLD = -1
 
@@ -39,19 +38,24 @@ __C.MODEL.BACKBONE.NAME = 'i3d_rgb'
 __C.MODEL.BACKBONE.PRETRAINED = True
 __C.MODEL.BACKBONE.PRETRAINED_WEIGHT_DIR = os.path.expanduser("~/.cache/")
 __C.MODEL.BACKBONE.DISABLE_BN = True
-__C.MODEL.BACKBONE.LAYERS = ('x2', 'x3', 'x4')
-__C.MODEL.BACKBONE.LAYER_PATHWAYS = 'topdown'  # 'none,topdown,bottomup'
+__C.MODEL.BACKBONE.LAYERS = ('x1', 'x2', 'x3', 'x4')
+__C.MODEL.BACKBONE.LAYER_PATHWAYS = 'none'  # 'none,topdown,bottomup'
 
 __C.MODEL.NECK = ConfigurationNode()
-__C.MODEL.NECK.NECK_TYPE = 'i3dneck'
+__C.MODEL.NECK.NECK_TYPE = 'i3d_neck'
 __C.MODEL.NECK.FIRST_CONV_SIZE = 256
-__C.MODEL.NECK.POOLING_MODE = 'max'
-__C.MODEL.NECK.SPP_LEVELS = (1, 3, 5)  # '1-3-5'
+__C.MODEL.NECK.POOLING_MODE = 'avg'
+__C.MODEL.NECK.SPP_LEVELS = (1, 2, 3, 7)  # '1-3-5'
 __C.MODEL.NECK.FC_ACTIVATION = 'elu'
 __C.MODEL.NECK.FC_HIDDEN_DIM = 2048
 __C.MODEL.NECK.FC_NUM_LAYERS = 2
 __C.MODEL.NECK.FC_BATCH_NORM = False
 __C.MODEL.NECK.FC_DROPOUT = 0.
+
+__C.MODEL.NECK.LSTM = ConfigurationNode()
+__C.MODEL.NECK.LSTM.HIDDEN_SIZE = 2048
+__C.MODEL.NECK.LSTM.NUM_LAYERS = 1
+__C.MODEL.NECK.LSTM.BIDIRECTIONAL = True
 
 # __C.LOGGING_ROI = None
 
@@ -104,10 +108,6 @@ def check_cfg(C):
         if C.DATASET.TRANSFORM == 'i3d_flow':
             assert C.DATASET.RESOLUTION == 224
             assert C.DATASET.FRAMES == 64
-
-        if C.DATAMODULE.SPLIT_SCHEMATIC == 'UBE':
-            assert C.DATAMODULE.NUM_CV_SPLITS == 10
-            assert C.DATAMODULE.I_CV_FOLD == -1
 
     if C.TRAINER.ACCUMULATE_GRAD_BATCHES > 1:
         assert C.MODEL.BACKBONE.DISABLE_BN
