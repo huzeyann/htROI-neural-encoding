@@ -24,11 +24,11 @@ __C.DATAMODULE.I_CV_FOLD = -1
 
 __C.DATASET = ConfigurationNode()
 __C.DATASET.NAME = 'Algonauts2021'
-__C.DATASET.ROOT_DIR = os.path.expanduser("~/Algonauts_2021_data/") # overwrite by .env
-__C.DATASET.TRANSFORM = 'i3d_rgb'
+__C.DATASET.ROOT_DIR = os.path.expanduser("~/Algonauts_2021_data/")  # overwrite by .env
+__C.DATASET.TRANSFORM = 'standard_rgb'
 __C.DATASET.RESOLUTION = 224
 __C.DATASET.FRAMES = 16
-__C.DATASET.VOXEL_INDEX_DIR = os.path.expanduser("~/Algonauts_2021_data/voxel_indexs/") # overwrite by .env
+__C.DATASET.VOXEL_INDEX_DIR = os.path.expanduser("~/Algonauts_2021_data/voxel_indexs/")  # overwrite by .env
 __C.DATASET.ROI = 'WB'
 
 __C.MODEL = ConfigurationNode()
@@ -89,25 +89,26 @@ __C.TRAINER.CALLBACKS.EARLY_STOP = ConfigurationNode()
 __C.TRAINER.CALLBACKS.EARLY_STOP.PATIENCE = 9
 
 __C.TRAINER.CALLBACKS.CHECKPOINT = ConfigurationNode()
-__C.TRAINER.CALLBACKS.CHECKPOINT.ROOT_DIR = os.path.expanduser("~/.cache/checkpoints/") # overwrite by .env
+__C.TRAINER.CALLBACKS.CHECKPOINT.ROOT_DIR = os.path.expanduser("~/.cache/checkpoints/")  # overwrite by .env
 __C.TRAINER.CALLBACKS.CHECKPOINT.RM_AT_DONE = True
 
 __C.TRAINER.CALLBACKS.LOGGER = ConfigurationNode()
 
-__C.RESULTS_DIR = '/data/huze/ray_results/algonauts2021/' # overwrite by .env
+__C.RESULTS_DIR = '/data/huze/ray_results/algonauts2021/'  # overwrite by .env
 
 __C.DEBUG = True
+
 
 def check_cfg(C):
     if C.DATASET.NAME == 'Algonauts2021':
         if C.MODEL.BACKBONE.NAME == 'i3d_rgb':
-            assert C.DATASET.TRANSFORM == 'i3d_rgb'
+            assert C.DATASET.TRANSFORM == 'standard_rgb'
         if C.MODEL.BACKBONE.NAME == 'i3d_flow':
             assert C.DATASET.TRANSFORM == 'i3d_flow'
 
         if C.DATASET.TRANSFORM == 'i3d_flow':
             assert C.DATASET.RESOLUTION == 224
-            assert C.DATASET.FRAMES == 64
+            assert C.DATASET.FRAMES == 32
 
     if C.TRAINER.ACCUMULATE_GRAD_BATCHES > 1:
         assert C.MODEL.BACKBONE.DISABLE_BN

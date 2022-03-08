@@ -6,7 +6,7 @@ from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader, Subset
 
 from src.config import get_cfg_defaults
-from src.data.build_dataset import build_dataset
+from src.data.build import build_dataset
 # from src.data.utils import *
 
 NUM_WORKERS = 1

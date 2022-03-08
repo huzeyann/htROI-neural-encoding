@@ -7,8 +7,8 @@ from torch import nn
 
 from src.config import get_cfg_defaults
 from src.config.config import convert_to_dict
-from src.modeling.backbone.build_backbone import build_backbone
-from src.modeling.neck.build_neck import build_neck
+from src.modeling.backbone.build import build_backbone
+from src.modeling.neck.build import build_neck
 from src.modeling.components.build_optimizer import build_optimizer
 from src.utils.metrics import vectorized_correlation
 

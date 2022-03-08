@@ -70,7 +70,7 @@ python main.py \
  --tmp_path /tmp \
  --on_extraction save_numpy \
  --output_path ./output \
- --extraction_fps 22 \
+ --extraction_fps 11 \
  --streams flow \
  --flow_type raft
 
