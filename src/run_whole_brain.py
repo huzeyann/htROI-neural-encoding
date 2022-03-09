@@ -30,6 +30,8 @@ def get_parser():
 
     parser.add_argument('--debug', action='store_true')
 
+    parser.add_argument('--include-multi-layer', dest='include_multi_layer', default=False, action='store_true')
+
     return parser
 
 
@@ -39,7 +41,7 @@ def main():
     launch_grid(**vars(args))
 
 
-def launch_grid(exp_config_dir: str, resume: str, debug: bool):
+def launch_grid(exp_config_dir: str, resume: str, debug: bool, include_multi_layer: bool):
     exp_configs = [p for p in Path(exp_config_dir).iterdir() if p.name.endswith('.yml')]
 
     # ray.init(local_mode=True)
@@ -54,26 +56,27 @@ def launch_grid(exp_config_dir: str, resume: str, debug: bool):
 
         name = exp_config.name.replace('.yml', '')
 
-        # multi-layer 1 run
-        tune.run(
-            tune.with_parameters(
-                run_single_tune_config,
-                cfg=cfg
-            ),
-            config={
-                'DATASET.ROI': tune.grid_search(['WB']),
-                'MODEL.BACKBONE.LAYERS': tune.grid_search([cfg.MODEL.BACKBONE.LAYERS]),
-                'MODEL.NECK.SPP_LEVELS': tune.grid_search([cfg.MODEL.NECK.SPP_LEVELS]),
-                'MODEL.NECK.FIRST_CONV_SIZE': tune.sample_from(
-                    lambda spec: {1: 2048, 2: 1024, 3: 512, 6: 256, 7: 256, 16: 1, 32: 1, 48: 1, 64: 1}[
-                        np.max(spec.config['MODEL.NECK.SPP_LEVELS'])]),
-            },
-            local_dir=cfg.RESULTS_DIR,
-            resources_per_trial={"cpu": 4, "gpu": 1},
-            name=name + '_' + 'multilayer',
-            # verbose=1,
-            resume=resume,
-        )
+        if include_multi_layer:
+            # multi-layer 1 run
+            tune.run(
+                tune.with_parameters(
+                    run_single_tune_config,
+                    cfg=cfg
+                ),
+                config={
+                    'DATASET.ROI': tune.grid_search(['WB']),
+                    'MODEL.BACKBONE.LAYERS': tune.grid_search([cfg.MODEL.BACKBONE.LAYERS]),
+                    'MODEL.NECK.SPP_LEVELS': tune.grid_search([cfg.MODEL.NECK.SPP_LEVELS]),
+                    'MODEL.NECK.FIRST_CONV_SIZE': tune.sample_from(
+                        lambda spec: {1: 2048, 2: 1024, 3: 512, 6: 256, 7: 256, 16: 1, 32: 1, 48: 1, 64: 1}[
+                            np.max(spec.config['MODEL.NECK.SPP_LEVELS'])]),
+                },
+                local_dir=cfg.RESULTS_DIR,
+                resources_per_trial={"cpu": 4, "gpu": 1},
+                name=name + '_' + 'multilayer',
+                # verbose=1,
+                resume=resume,
+            )
 
         # single-layer 16 run
         tune.run(
