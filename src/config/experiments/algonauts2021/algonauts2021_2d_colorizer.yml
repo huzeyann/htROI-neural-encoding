@@ -31,7 +31,7 @@ MODEL:
       NUM_LAYERS: 1
       BIDIRECTIONAL: false
 OPTIMIZER:
-  LR: 0.0003
+  LR: 0.0001
   NAME: AdaBelief
   WEIGHT_DECAY: 0.01
 RESULTS_DIR: /data/huze/ray_results/algonauts2021/
@@ -44,7 +44,7 @@ TRAINER:
     BACKBONE:
       DEFROST_SCORE: 0.03
       INITIAL_RATIO_LR: 0.1
-      LR_MULTIPLY_EFFICIENT: 1.8
+      LR_MULTIPLY_EFFICIENT: 1.6
       SHOULD_ALIGN: true
       TRAIN_BN: false
       VERBOSE: true

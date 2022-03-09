@@ -10,28 +10,20 @@ from src.modeling.components.pyramidpoolingnd import SpatialPyramidPoolingND, Sp
 
 from src.modeling.components.fc import build_fc, FcFusion
 
+
 class I3DNeck(nn.Module):
 
     def __init__(self, cfg=get_cfg_defaults()):
         super().__init__()
         self.cfg = cfg
 
-        def roundup(x):
-            return int(np.ceil(x))
+        channel_dict = {
+            'i3d_rgb': [256, 512, 1024, 2048],
+            'i3d_flow': [192, 480, 832, 1024],
+            '3d_swin': [256, 512, 1024, 1024],
+        }
 
-        # video_size = self.cfg.DATASET.RESOLUTION
-        # video_frames = self.cfg.DATASET.FRAMES
-        if self.cfg.MODEL.BACKBONE.NAME == 'i3d_rgb':
-            cs = [256, 512, 1024, 2048]
-        elif self.cfg.MODEL.BACKBONE.NAME == 'i3d_flow':
-            cs = [192, 480, 832, 1024]
-        elif self.cfg.MODEL.BACKBONE.NAME == '3d_swin':
-            cs = [256, 512, 1024, 1024]
-        else:
-            NotImplementedError()
-
-        self.c_dict = {f'x{i+1}': c for i, c in enumerate(cs)}
-        self.planes = self.cfg.MODEL.NECK.FIRST_CONV_SIZE
+        self.c_dict = {f'x{i + 1}': c for i, c in enumerate(channel_dict[self.cfg.MODEL.BACKBONE.NAME])}
         self.pyramid_layers = [xi for xi in self.cfg.MODEL.BACKBONE.LAYERS]  # x1,x2,x3,x4
         self.pyramid_layers.sort()
         self.pathways = self.cfg.MODEL.BACKBONE.LAYER_PATHWAYS.split(
@@ -40,6 +32,10 @@ class I3DNeck(nn.Module):
         self.output_size = len(torch.load(Path.joinpath(Path(self.cfg.DATASET.VOXEL_INDEX_DIR),
                                                         Path(self.cfg.DATASET.ROI + '.pt'))))
         self.spp_level = [(1, i, i) for i in self.cfg.MODEL.NECK.SPP_LEVELS]
+
+        self.planes = {k: np.min(
+            [v, self.cfg.MODEL.NECK.FIRST_CONV_SIZE]) if not self.is_pyramid else self.cfg.MODEL.NECK.FIRST_CONV_SIZE
+                       for k, v in self.c_dict.items()}
 
         if self.is_pyramid:
             assert len(self.pathways) >= 1 and self.pathways[0] != 'none'
@@ -58,17 +54,17 @@ class I3DNeck(nn.Module):
 
                 # reduce conv channel dimension
                 self.first_convs.update(
-                    {k: nn.Conv3d(self.c_dict[x_i], self.planes, kernel_size=1, stride=1)})
+                    {k: nn.Conv3d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
 
                 # optional pathways
                 if self.is_pyramid:
                     self.smooths.update(
-                        {k: nn.Conv3d(self.planes, self.planes, kernel_size=3, stride=1, padding='same')})
+                        {k: nn.Conv3d(self.planes[x_i], self.planes[x_i], kernel_size=3, stride=1, padding='same')})
 
                 # SPP
                 spp = SpatialPyramidPoolingND(self.spp_level, self.cfg.MODEL.NECK.POOLING_MODE)
                 self.poolings.update({k: spp})
-                self.fc_input_dims.update({k: spp.get_output_size(self.planes)})
+                self.fc_input_dims.update({k: spp.get_output_size(self.planes[x_i])})
 
                 # FC first part
                 self.ch_response.update({k: build_fc(

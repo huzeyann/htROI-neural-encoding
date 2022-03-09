@@ -9,12 +9,12 @@ DATASET:
   ROOT_DIR: /home/huze/Algonauts_2021_data/
   TRANSFORM: standard_rgb
   VOXEL_INDEX_DIR: /home/huze/Algonauts_2021_data/voxel_indexs/
-DEBUG: false
+DEBUG: true
 DESCRIPTION: I3D RGB BASE CONFIG
 MODEL:
   BACKBONE:
     DISABLE_BN: true
-    LAYER_PATHWAYS: topdown
+    LAYER_PATHWAYS: none
     NAME: i3d_rgb
     PRETRAINED: true
     PRETRAINED_WEIGHT_DIR: /home/huze/.cache/
@@ -35,13 +35,13 @@ RESULTS_DIR: /data/huze/ray_results/algonauts2021/
 SCHEDULER:
   NAME: 'no'
 TRAINER:
-  ACCUMULATE_GRAD_BATCHES: 4
-  BATCH_SIZE: 8
+  ACCUMULATE_GRAD_BATCHES: 8
+  BATCH_SIZE: 4
   CALLBACKS:
     BACKBONE:
       DEFROST_SCORE: 0.06
       INITIAL_RATIO_LR: 0.1
-      LR_MULTIPLY_EFFICIENT: 1.5
+      LR_MULTIPLY_EFFICIENT: 1.6
       SHOULD_ALIGN: true
       TRAIN_BN: false
       VERBOSE: true
@@ -49,7 +49,7 @@ TRAINER:
       RM_AT_DONE: true
       ROOT_DIR: /home/huze/.cache/checkpoints/
     EARLY_STOP:
-      PATIENCE: 9
+      PATIENCE: 6
     LOGGER: {}
   FP16: true
   GPUS: 1

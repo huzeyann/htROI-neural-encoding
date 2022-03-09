@@ -18,20 +18,20 @@ class LSTMBlock(nn.Module):
         super().__init__()
 
         # will introduce 1 extra layer, but reduce 4x parameters
-        # self.dim_reduction = nn.Linear(input_size, hidden_size)
+        self.dim_reduction = nn.Linear(input_size, hidden_size)
 
-        self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers,
+        self.lstm = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size, num_layers=num_layers,
                             bidirectional=bidirectional, batch_first=False)
         self.output_h_size = hidden_size * num_layers * (2 if bidirectional else 1)
 
     def forward(self, x):
         # will introduce 1 extra layer, but reduce 4x parameters
-        # t = x.shape[1]
-        # x = rearrange(x, 'b t d -> (b t) d')
-        # x = self.dim_reduction(x)
-        # x = rearrange(x, '(b t) d -> t b d', t=t)
+        t = x.shape[1]
+        x = rearrange(x, 'b t d -> (b t) d')
+        x = self.dim_reduction(x)
+        x = rearrange(x, '(b t) d -> t b d', t=t)
 
-        x = rearrange(x, 'b t d -> t b d')
+        # x = rearrange(x, 'b t d -> t b d')
         output, (hidden, cell) = self.lstm(x)
         hidden = rearrange(hidden, 'd b h -> b (d h)')
         return hidden
@@ -62,16 +62,13 @@ class TwoDLSTMNeck(nn.Module):
             '2d_simclr_warp_3d': [256, 512, 1024, 2048],
             '2d_densnet_warp_3d': [128, 256, 640, 1664],
             '2d_pyconvsegnet_warp_3d': [256, 512, 1024, 2048],
-            # '2d_bdcnvgg_warp_3d': [21, 21, 21, 21],
             '2d_bdcnvgg_warp_3d': [1, 1, 1, 1],  # edge prediction at different level
             '2d_moby_swin_warp_3d': [192, 384, 768, 768],
             '2d_seg_swin_warp_3d': [128, 256, 512, 1024],
-            # '2d_colorizer_warp_3d': [256, 512, 512, 313],
             '2d_colorizer_warp_3d': [256, 512, 512, 128],
         }
 
         self.c_dict = {f'x{i + 1}': c for i, c in enumerate(channel_dict[self.cfg.MODEL.BACKBONE.NAME])}
-        self.planes = self.cfg.MODEL.NECK.FIRST_CONV_SIZE
         self.pyramid_layers = [xi for xi in self.cfg.MODEL.BACKBONE.LAYERS]  # x1,x2,x3,x4
         self.pyramid_layers.sort()
         self.pathways = self.cfg.MODEL.BACKBONE.LAYER_PATHWAYS.split(
@@ -80,6 +77,10 @@ class TwoDLSTMNeck(nn.Module):
         self.output_size = len(torch.load(Path.joinpath(Path(self.cfg.DATASET.VOXEL_INDEX_DIR),
                                                         Path(self.cfg.DATASET.ROI + '.pt'))))
         self.spp_level = [(i, i) for i in self.cfg.MODEL.NECK.SPP_LEVELS]  # this will not pool time dimension
+
+        self.planes = {k: np.min(
+            [v, self.cfg.MODEL.NECK.FIRST_CONV_SIZE]) if not self.is_pyramid else self.cfg.MODEL.NECK.FIRST_CONV_SIZE
+                       for k, v in self.c_dict.items()}
 
         if self.is_pyramid:
             assert len(self.pathways) >= 1 and self.pathways[0] != 'none'
@@ -98,18 +99,18 @@ class TwoDLSTMNeck(nn.Module):
 
                 # reduce conv channel dimension
                 self.first_convs.update(
-                    {k: nn.Conv3d(self.c_dict[x_i], self.planes, kernel_size=1, stride=1)})
+                    {k: nn.Conv3d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
 
                 # optional pathways
                 if self.is_pyramid:
                     self.smooths.update(
-                        {k: nn.Conv3d(self.planes, self.planes, kernel_size=(1, 3, 3), stride=(1, 1, 1),
+                        {k: nn.Conv3d(self.planes[x_i], self.planes[x_i], kernel_size=(1, 3, 3), stride=(1, 1, 1),
                                       padding='same')})
 
                 # SPP
                 pooling = ThreeDPoolingWarp(self.spp_level, self.cfg.MODEL.NECK.POOLING_MODE)
                 self.poolings.update({k: pooling})
-                self.lstm_input_dims.update({k: pooling.spp.get_output_size(self.planes)})
+                self.lstm_input_dims.update({k: pooling.spp.get_output_size(self.planes[x_i])})
 
                 # LSTM
                 lstm = LSTMBlock(input_size=self.lstm_input_dims[k],

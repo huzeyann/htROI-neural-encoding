@@ -24,7 +24,7 @@ class VoxelEncodingModel(pl.LightningModule):
         self.backbone = build_backbone(self.cfg)
         self.neck = build_neck(self.cfg)
 
-        self.current_val_score = 0  # dirty finetune callback
+        self.current_val_score = 0  # for my dirty finetune callback
 
     def forward(self, x):
         x = self.backbone(x)

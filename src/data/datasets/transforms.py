@@ -41,7 +41,7 @@ def get_simclr_transform(resolution):
     ])
 
 
-@TRANSFORM_REGISTRY.register('bdcnvgg_2d')
+@TRANSFORM_REGISTRY.register('bdcn')
 def get_bdcnvgg_2d_transform(resolution):
     return transforms.Compose([
         transforms.Resize((resolution, resolution)),

@@ -71,7 +71,6 @@ class SpatialPyramidPoolingND(nn.Module):
 
 
 class SpatialPyramidInterpolationND(nn.Module):
-    # interpolation is more robust
     def __init__(self, levels):
         """
                 Spatial Pyramid Pooling Module, which divides the input Tensor horizontally and horizontally

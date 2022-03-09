@@ -2,9 +2,9 @@
 
 # backbone download link
 #
-download_url = 'https://github.com/huzeyann/video_features/blob/master/models/i3d/checkpoints/i3d_flow.pt'
-
 import os
+
+download_url = 'https://raw.githubusercontent.com/v-iashin/video_features/master/models/i3d/checkpoints/i3d_flow.pt'
 
 import numpy as np
 import torch
@@ -62,6 +62,11 @@ def modify_i3d_flow_partial(model, layers):
 def load_i3d_flow(pretrained=True, cache_dir='~/.cache/'):
     model = I3D(num_classes=400, modality='flow')
     if pretrained:
-        stat_dict = torch.hub.load_state_dict_from_url(download_url)
+        cache_dir = os.path.expanduser(cache_dir)
+        path = os.path.join(cache_dir, 'i3d_flow.pt')
+        if not os.path.exists(path):
+            raise Exception(f'{path} not exists! please download from: {download_url}')
+
+        stat_dict = torch.load(path)
         model.load_state_dict(stat_dict)
     return model

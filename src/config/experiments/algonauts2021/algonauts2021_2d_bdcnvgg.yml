@@ -7,7 +7,7 @@ DATASET:
   RESOLUTION: 224
   ROI: WB
   ROOT_DIR: /home/huze/Algonauts_2021_data/
-  TRANSFORM: bdcnvgg_2d
+  TRANSFORM: bdcn
   VOXEL_INDEX_DIR: /home/huze/Algonauts_2021_data/voxel_indexs/
 DEBUG: true
 DESCRIPTION: BDCN EDGE VGG16 BASE CONFIG
@@ -47,7 +47,7 @@ TRAINER:
   BATCH_SIZE: 2
   CALLBACKS:
     BACKBONE:
-      DEFROST_SCORE: 0.06
+      DEFROST_SCORE: 0.045
       INITIAL_RATIO_LR: 0.1
       LR_MULTIPLY_EFFICIENT: 1.6
       SHOULD_ALIGN: true

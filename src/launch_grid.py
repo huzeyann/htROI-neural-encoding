@@ -36,9 +36,9 @@ def get_parser():
     parser.add_argument(
         "--roi-config", "-r",
         dest='roi_config',
-        default='src/config/dataset/algonauts2021_3d_resnet_defrost_score.json',
+        default='src/config/dataset/algonauts2021_3d_resnet.json',
         required=False,
-        help="example: `--roi-config src/config/dataset/algonauts2021_3d_resnet_defrost_score.json`",
+        help="example: `--roi-config src/config/dataset/algonauts2021_3d_resnet.json`",
     )
 
     parser.add_argument(

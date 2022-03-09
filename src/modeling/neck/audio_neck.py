@@ -21,7 +21,7 @@ class AudioNeck(nn.Module):
         self.c_dict = {f'x{i + 1}': c for i, c in enumerate(cs)}
         self.c_dict['x_label'] = 384
 
-        self.planes = self.cfg.MODEL.NECK.FIRST_CONV_SIZE
+        self.planes = {k: np.min([v, self.cfg.MODEL.NECK.FIRST_CONV_SIZE]) for k, v in self.c_dict.items()}
         self.pyramid_layers = [xi for xi in self.cfg.MODEL.BACKBONE.LAYERS]  # x1,x2,x3,x4
         self.pyramid_layers.sort()
         self.pathways = self.cfg.MODEL.BACKBONE.LAYER_PATHWAYS.split(
@@ -46,12 +46,12 @@ class AudioNeck(nn.Module):
 
                 # reduce conv channel dimension
                 self.first_convs.update(
-                    {k: nn.Conv2d(self.c_dict[x_i], self.planes, kernel_size=1, stride=1)})
+                    {k: nn.Conv2d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
 
                 # SPP
                 spp = SpatialPyramidPoolingND(self.spp_level, mode=self.cfg.MODEL.NECK.POOLING_MODE)
                 self.poolings.update({k: spp})
-                self.fc_input_dims.update({k: spp.get_output_size(self.planes)})
+                self.fc_input_dims.update({k: spp.get_output_size(self.planes[x_i])})
 
                 # FC first part
                 self.ch_response.update({k: build_fc(

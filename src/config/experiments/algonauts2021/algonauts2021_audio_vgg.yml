@@ -9,10 +9,16 @@ DATASET:
   ROOT_DIR: /home/huze/Algonauts_2021_data/
   TRANSFORM: audio_mel
   VOXEL_INDEX_DIR: /home/huze/Algonauts_2021_data/voxel_indexs/
-DEBUG: false
+DEBUG: true
 DESCRIPTION: Audio VGG BASE CONFIG
 MODEL:
   BACKBONE:
+    LAYERS:
+      - x1
+      - x2
+      - x3
+      - x4
+      - x_label
     DISABLE_BN: true
     LAYER_PATHWAYS: none
     NAME: audio_vggish
@@ -22,7 +28,7 @@ MODEL:
     SPP_LEVELS:
       - 1
       - 2
-      - 4
+      - 3
       - 6
     FC_ACTIVATION: elu
     FC_BATCH_NORM: false
@@ -45,7 +51,7 @@ TRAINER:
     BACKBONE:
       DEFROST_SCORE: 0.015
       INITIAL_RATIO_LR: 0.1
-      LR_MULTIPLY_EFFICIENT: 1.5
+      LR_MULTIPLY_EFFICIENT: 1.6
       SHOULD_ALIGN: true
       TRAIN_BN: false
       VERBOSE: true

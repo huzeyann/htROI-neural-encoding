@@ -31,7 +31,7 @@ def optimize_val_correlation(vals: Tensor, y: Tensor, device='cpu', verbose=Fals
         result = differential_evolution(correlation_evaluation_function, bounds, tol=tol, disp=verbose)
         score = -result['fun']
 
-        ws = result['x'] # ensemble weight
+        ws = result['x']  # ensemble weight
         ws /= ws.sum()  # sum to 1
         ws = torch.tensor(ws).float()
 

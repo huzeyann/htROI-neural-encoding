@@ -7,9 +7,9 @@ DATASET:
   RESOLUTION: 224
   ROI: WB
   ROOT_DIR: /home/huze/Algonauts_2021_data/
-  TRANSFORM: 3d_swin
+  TRANSFORM: swin
   VOXEL_INDEX_DIR: /home/huze/Algonauts_2021_data/voxel_indexs/
-DEBUG: false
+DEBUG: true
 DESCRIPTION: 3D Swin-Transformer-B BASE CONFIG
 MODEL:
   BACKBONE:

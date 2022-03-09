@@ -45,7 +45,6 @@ def build_callbacks(cfg):
             save_top_k=1,
             mode='max',
         ),
-        # this does not report max score...
         TuneReportCallback(
             ['val_corr', 'hp_metric'],
             on="validation_end",
@@ -111,23 +110,25 @@ def run_single_train(cfg: CfgNode = get_cfg_defaults()):
         os.remove(trainer.checkpoint_callback.best_model_path)
 
 
+def run_single_tune_config(tune_dict: Dict, cfg: CfgNode):
+    cfg.merge_from_list(dict_to_list(tune_dict))
+    run_single_train(cfg)
+
+
 if __name__ == '__main__':
     from ray.tune import CLIReporter
     import ray
 
-    # ray.init(local_mode=True)
 
+    # ray.init(local_mode=True)
 
     # reporter = CLIReporter()
     # reporter.logdir = '/home/huze/.cache/debug/'
     # tune.session.init(reporter)
-    def run_single_tune_config(tune_dict: Dict, cfg: CfgNode):
-        cfg.merge_from_list(dict_to_list(tune_dict))
-        run_single_train(cfg)
-
 
     cfg = get_cfg_defaults()
-    cfg.merge_from_file('/data_smr/huze/projects/kROI-voxel-encoding/src/config/experiments/algonauts2021_2d_simclr.yml')
+    cfg.merge_from_file(
+        '/data_smr/huze/projects/kROI-voxel-encoding/src/config/experiments/algonauts2021_2d_simclr.yml')
 
     # tune.run(
     #     tune.with_parameters(
