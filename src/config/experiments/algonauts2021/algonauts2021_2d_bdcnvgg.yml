@@ -31,7 +31,7 @@ MODEL:
     FC_HIDDEN_DIM: 2048
     FC_NUM_LAYERS: 2
     FIRST_CONV_SIZE: 1
-    NECK_TYPE: lstm_neck
+    NECK_TYPE: i3d_neck
     LSTM:
       HIDDEN_SIZE: 2048
       NUM_LAYERS: 1
