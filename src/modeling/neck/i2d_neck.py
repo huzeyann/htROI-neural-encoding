@@ -4,57 +4,16 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from einops import rearrange
 
 from src.config import get_cfg_defaults
-from src.modeling.components.pyramidpoolingnd import SpatialPyramidPoolingND, SpatialPyramidInterpolationND
+from src.modeling.components.pyramidpoolingnd import SpatialPyramidPoolingND
 
 from src.modeling.components.fc import build_fc, FcFusion
 from src.modeling.backbone.build import CHANNEL_DICT
 
+from einops.layers.torch import Rearrange, Reduce
 
-class LSTMBlock(nn.Module):
-
-    def __init__(self, input_size, hidden_size=2048, num_layers=1, bidirectional=True):
-        super().__init__()
-
-        # will introduce 1 extra layer, but reduce 4x parameters
-        self.dim_reduction = nn.Linear(input_size, hidden_size)
-
-        self.lstm = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size, num_layers=num_layers,
-                            bidirectional=bidirectional, batch_first=False)
-        self.output_h_size = hidden_size * num_layers * (2 if bidirectional else 1)
-
-    def forward(self, x):
-        # will introduce 1 extra layer, but reduce 4x parameters
-        t = x.shape[1]
-        x = rearrange(x, 'b t d -> (b t) d')
-        x = self.dim_reduction(x)
-        x = rearrange(x, '(b t) d -> t b d', t=t)
-
-        # x = rearrange(x, 'b t d -> t b d')
-        output, (hidden, cell) = self.lstm(x)
-        hidden = rearrange(hidden, 'd b h -> b (d h)')
-        return hidden
-
-
-class ThreeDPoolingWarp(nn.Module):
-    def __init__(self, spp_level, mode='avg'):
-        super().__init__()
-
-        self.spp = SpatialPyramidPoolingND(spp_level, mode=mode)
-
-    def forward(self, x):
-        # x.shape (b c t h w)
-        batch_size = x.shape[0]
-        x = rearrange(x, 'b c t h w -> (b t) c h w')
-        x = self.spp(x)
-        x = rearrange(x, '(b t) d -> b t d', b=batch_size)
-
-        return x
-
-
-class TwoDLSTMNeck(nn.Module):
+class I2DNeck(nn.Module):
 
     def __init__(self, cfg=get_cfg_defaults()):
         super().__init__()
@@ -67,7 +26,7 @@ class TwoDLSTMNeck(nn.Module):
         self.is_pyramid = False if self.pathways[0] == 'none' else True
         self.output_size = len(torch.load(Path.joinpath(Path(self.cfg.DATASET.VOXEL_INDEX_DIR),
                                                         Path(self.cfg.DATASET.ROI + '.pt'))))
-        self.spp_level = [(i, i) for i in self.cfg.MODEL.NECK.SPP_LEVELS]  # this will not pool time dimension
+        self.spp_level = [(i, i) for i in self.cfg.MODEL.NECK.SPP_LEVELS]
 
         self.planes = {k: np.min(
             [v, self.cfg.MODEL.NECK.FIRST_CONV_SIZE]) if not self.is_pyramid else self.cfg.MODEL.NECK.FIRST_CONV_SIZE
@@ -79,7 +38,7 @@ class TwoDLSTMNeck(nn.Module):
         self.first_convs = nn.ModuleDict()
         self.smooths = nn.ModuleDict()
         self.poolings = nn.ModuleDict()
-        self.lstm_input_dims = {}
+        self.fc_input_dims = {}
         self.ch_response = nn.ModuleDict()
 
         self.num_chs = len(self.pyramid_layers) * len(self.pathways)
@@ -88,35 +47,41 @@ class TwoDLSTMNeck(nn.Module):
             for pathway in self.pathways:
                 k = f'{pathway}_{x_i}'
 
-                # reduce conv channel dimension
-                self.first_convs.update(
-                    {k: nn.Conv3d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
+                if x_i != 'x_label':
+                    # reduce conv channel dimension
+                    self.first_convs.update(
+                        {k: nn.Conv2d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
 
-                # optional pathways
-                if self.is_pyramid:
-                    self.smooths.update(
-                        {k: nn.Conv3d(self.planes[x_i], self.planes[x_i], kernel_size=(1, 3, 3), stride=(1, 1, 1),
-                                      padding='same')})
+                    # optional pathways
+                    if self.is_pyramid:
+                        self.smooths.update(
+                            {k: nn.Conv2d(self.planes[x_i], self.planes[x_i], kernel_size=3, stride=1, padding='same')})
 
-                # SPP
-                pooling = ThreeDPoolingWarp(self.spp_level, self.cfg.MODEL.NECK.POOLING_MODE)
-                self.poolings.update({k: pooling})
-                self.lstm_input_dims.update({k: pooling.spp.get_output_size(self.planes[x_i])})
+                    # SPP
+                    spp = SpatialPyramidPoolingND(self.spp_level, self.cfg.MODEL.NECK.POOLING_MODE)
+                    self.poolings.update({k: spp})
+                    self.fc_input_dims.update({k: spp.get_output_size(self.planes[x_i])})
 
-                # LSTM
-                lstm = LSTMBlock(input_size=self.lstm_input_dims[k],
-                                 hidden_size=self.cfg.MODEL.NECK.LSTM.HIDDEN_SIZE,
-                                 num_layers=self.cfg.MODEL.NECK.LSTM.NUM_LAYERS,
-                                 bidirectional=self.cfg.MODEL.NECK.LSTM.BIDIRECTIONAL)
-                self.ch_response.update({k: lstm})
+                    # FC first part
+                    self.ch_response.update({k: build_fc(
+                        self.cfg, self.fc_input_dims[k], self.output_size, part='first')})
+
+                else:
+                    # x_label
+                    self.first_convs.update({k: nn.Sequential(Rearrange('b c -> b 1 1 1 c'),
+                                                              nn.Conv2d(self.c_dict[x_i], self.planes[x_i],
+                                                                        kernel_size=1, stride=1))})
+                    self.poolings.update({k: nn.Flatten()})
+                    self.ch_response.update({k: build_fc(
+                        self.cfg, self.planes[x_i], self.output_size, part='first')})
 
         self.final_fusions = FcFusion(fusion_type='concat')
-        in_size = sum([lstm.output_h_size for lstm in self.ch_response.values()], 0)
+        in_size = self.cfg.MODEL.NECK.FC_HIDDEN_DIM * self.num_chs
         self.final_fc = build_fc(self.cfg, in_size, self.output_size)
 
     def forward(self, x):
 
-        # x.shape (b c t h w)
+        # vid
         out = {}
         for x_i in self.pyramid_layers:
             for pathway in self.pathways:

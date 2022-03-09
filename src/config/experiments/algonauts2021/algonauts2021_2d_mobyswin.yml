@@ -19,6 +19,7 @@ MODEL:
     PRETRAINED: true
     PRETRAINED_WEIGHT_DIR: /home/huze/.cache/
   NECK:
+    POOLING_MODE: max
     FC_ACTIVATION: elu
     FC_BATCH_NORM: false
     FC_DROPOUT: 0.0
@@ -52,7 +53,7 @@ TRAINER:
       RM_AT_DONE: true
       ROOT_DIR: /home/huze/.cache/checkpoints/
     EARLY_STOP:
-      PATIENCE: 6
+      PATIENCE: 9
     LOGGER: {}
   FP16: true
   GPUS: 1

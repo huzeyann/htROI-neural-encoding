@@ -25,6 +25,7 @@ MODEL:
     PRETRAINED: true
     PRETRAINED_WEIGHT_DIR: /home/huze/.cache/
   NECK:
+    POOLING_MODE: max
     SPP_LEVELS:
       - 1
       - 2
@@ -35,7 +36,7 @@ MODEL:
     FC_DROPOUT: 0.0
     FC_HIDDEN_DIM: 2048
     FC_NUM_LAYERS: 2
-    FIRST_CONV_SIZE: 1
+    FIRST_CONV_SIZE: 256
     NECK_TYPE: audio_neck
 OPTIMIZER:
   LR: 0.0001
@@ -59,9 +60,9 @@ TRAINER:
       RM_AT_DONE: true
       ROOT_DIR: /home/huze/.cache/checkpoints/
     EARLY_STOP:
-      PATIENCE: 6
+      PATIENCE: 9
     LOGGER: {}
-  FP16: true
+  FP16: false
   GPUS: 1
   MAX_EPOCHS: 100
   VAL_CHECK_INTERVAL: 1.0

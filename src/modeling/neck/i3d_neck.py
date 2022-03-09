@@ -9,21 +9,16 @@ from src.config import get_cfg_defaults
 from src.modeling.components.pyramidpoolingnd import SpatialPyramidPoolingND, SpatialPyramidInterpolationND
 
 from src.modeling.components.fc import build_fc, FcFusion
+from src.modeling.backbone.build import CHANNEL_DICT
 
+from einops.layers.torch import Rearrange, Reduce
 
 class I3DNeck(nn.Module):
 
     def __init__(self, cfg=get_cfg_defaults()):
         super().__init__()
         self.cfg = cfg
-
-        channel_dict = {
-            'i3d_rgb': [256, 512, 1024, 2048],
-            'i3d_flow': [192, 480, 832, 1024],
-            '3d_swin': [256, 512, 1024, 1024],
-        }
-
-        self.c_dict = {f'x{i + 1}': c for i, c in enumerate(channel_dict[self.cfg.MODEL.BACKBONE.NAME])}
+        self.c_dict = CHANNEL_DICT[self.cfg.MODEL.BACKBONE.NAME]
         self.pyramid_layers = [xi for xi in self.cfg.MODEL.BACKBONE.LAYERS]  # x1,x2,x3,x4
         self.pyramid_layers.sort()
         self.pathways = self.cfg.MODEL.BACKBONE.LAYER_PATHWAYS.split(
@@ -52,23 +47,33 @@ class I3DNeck(nn.Module):
             for pathway in self.pathways:
                 k = f'{pathway}_{x_i}'
 
-                # reduce conv channel dimension
-                self.first_convs.update(
-                    {k: nn.Conv3d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
+                if x_i != 'x_label':
+                    # reduce conv channel dimension
+                    self.first_convs.update(
+                        {k: nn.Conv3d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
 
-                # optional pathways
-                if self.is_pyramid:
-                    self.smooths.update(
-                        {k: nn.Conv3d(self.planes[x_i], self.planes[x_i], kernel_size=3, stride=1, padding='same')})
+                    # optional pathways
+                    if self.is_pyramid:
+                        self.smooths.update(
+                            {k: nn.Conv3d(self.planes[x_i], self.planes[x_i], kernel_size=3, stride=1, padding='same')})
 
-                # SPP
-                spp = SpatialPyramidPoolingND(self.spp_level, self.cfg.MODEL.NECK.POOLING_MODE)
-                self.poolings.update({k: spp})
-                self.fc_input_dims.update({k: spp.get_output_size(self.planes[x_i])})
+                    # SPP
+                    spp = SpatialPyramidPoolingND(self.spp_level, self.cfg.MODEL.NECK.POOLING_MODE)
+                    self.poolings.update({k: spp})
+                    self.fc_input_dims.update({k: spp.get_output_size(self.planes[x_i])})
 
-                # FC first part
-                self.ch_response.update({k: build_fc(
-                    self.cfg, self.fc_input_dims[k], self.output_size, part='first')})
+                    # FC first part
+                    self.ch_response.update({k: build_fc(
+                        self.cfg, self.fc_input_dims[k], self.output_size, part='first')})
+
+                else:
+                    # x_label
+                    self.first_convs.update({k: nn.Sequential(Rearrange('b c -> b 1 1 1 c'),
+                                                              nn.Conv3d(self.c_dict[x_i], self.planes[x_i],
+                                                                        kernel_size=1, stride=1))})
+                    self.poolings.update({k: nn.Flatten()})
+                    self.ch_response.update({k: build_fc(
+                        self.cfg, self.planes[x_i], self.output_size, part='first')})
 
         self.final_fusions = FcFusion(fusion_type='concat')
         in_size = self.cfg.MODEL.NECK.FC_HIDDEN_DIM * self.num_chs

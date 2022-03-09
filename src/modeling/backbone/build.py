@@ -17,6 +17,24 @@ from .vggish_audio.my_api import get_vggish_torch, modify_vggish_audio_partial
 from .warp_2Dto3D import TwoDtoThreeDWarp
 from src.utils.rigistry import Registry
 
+CHANNEL_KEYS = ['x1', 'x2', 'x3', 'x4', 'x_label']
+CHANNELS = {
+    'i3d_rgb': [256, 512, 1024, 2048, -1],  # -1 for not implemented in my_api
+    'i3d_flow': [192, 480, 832, 1024, -1],
+    '3d_swin': [256, 512, 1024, 1024, -1],
+    '2d_simclr_warp_3d': [256, 512, 1024, 2048, -1],
+    '2d_densnet_warp_3d': [128, 256, 640, 1664, -1],
+    '2d_pyconvsegnet_warp_3d': [256, 512, 1024, 2048, -1],
+    '2d_bdcnvgg_warp_3d': [1, 1, 1, 1, -1],  # edge prediction at different level is 1
+    # '2d_bdcnvgg_warp_3d': [21, 21, 21, 21, -1],  # edge prediction at different level is 1
+    '2d_moby_swin_warp_3d': [192, 384, 768, 768, -1],
+    '2d_seg_swin_warp_3d': [128, 256, 512, 1024, -1],
+    '2d_colorizer_warp_3d': [256, 512, 512, 128, -1],
+    'audio_vggish': [192, 384, 768, 1536, 384],
+}
+# unpack
+CHANNEL_DICT = {k: {ck: vi for ck, vi in zip(CHANNEL_KEYS, v)} for k, v in CHANNELS.items()}
+
 BACKBONE_REGISTRY = Registry()
 
 

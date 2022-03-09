@@ -9,6 +9,7 @@ from src.config import get_cfg_defaults
 from src.modeling.components.pyramidpoolingnd import SpatialPyramidPoolingND
 
 from src.modeling.components.fc import build_fc, FcFusion
+from src.modeling.backbone.build import CHANNEL_DICT
 
 
 class AudioNeck(nn.Module):
@@ -17,9 +18,7 @@ class AudioNeck(nn.Module):
         super().__init__()
         self.cfg = cfg
 
-        cs = [192, 384, 768, 1536]
-        self.c_dict = {f'x{i + 1}': c for i, c in enumerate(cs)}
-        self.c_dict['x_label'] = 384
+        self.c_dict = CHANNEL_DICT[self.cfg.MODEL.BACKBONE.NAME]
 
         self.planes = {k: np.min([v, self.cfg.MODEL.NECK.FIRST_CONV_SIZE]) for k, v in self.c_dict.items()}
         self.pyramid_layers = [xi for xi in self.cfg.MODEL.BACKBONE.LAYERS]  # x1,x2,x3,x4

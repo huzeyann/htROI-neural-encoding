@@ -13,7 +13,7 @@ from ray.tune.integration.pytorch_lightning import TuneReportCallback
 from src.utils.misc import dict_to_list
 from yacs.config import CfgNode
 
-from src.config import get_cfg_defaults
+from src.config import get_cfg_defaults, combine_cfgs
 from src.data.datamodule import MyDataModule
 from src.models.voxel_encoding_model import VoxelEncodingModel
 from src.utils.callbacks import MyScoreFinetuning
@@ -119,17 +119,18 @@ if __name__ == '__main__':
     from ray.tune import CLIReporter
     import ray
 
-
     # ray.init(local_mode=True)
 
     # reporter = CLIReporter()
     # reporter.logdir = '/home/huze/.cache/debug/'
     # tune.session.init(reporter)
 
-    cfg = get_cfg_defaults()
-    cfg.merge_from_file(
-        '/data_smr/huze/projects/kROI-voxel-encoding/src/config/experiments/algonauts2021_2d_simclr.yml')
+    exp_config = '/data_smr/huze/projects/kROI-voxel-encoding/src/config/experiments/algonauts2021/algonauts2021_3d_resnet.yml'
 
+    cfg = combine_cfgs(
+        path_cfg_data=exp_config,
+        list_cfg_override=['DEBUG', False]
+    )
     # tune.run(
     #     tune.with_parameters(
     #         run_single_tune_config,
@@ -139,11 +140,16 @@ if __name__ == '__main__':
     # )
 
     tune_config = {
-        'DATASET.ROI': tune.grid_search(['WB']),
+        'DATASET.ROI': tune.grid_search(['LC2']),
         # 'DATASET.FRAMES': tune.grid_search([4, 8, 12, 16]),
-        'MODEL.BACKBONE.LAYERS': tune.grid_search([('x4',), ('x1', 'x2', 'x3', 'x4',)]),
         # 'MODEL.NECK.LSTM.BIDIRECTIONAL': tune.grid_search([False]),
         # 'MODEL.NECK.LSTM.NUM_LAYERS': tune.grid_search([1]),
+        # 'MODEL.NECK.NECK_TYPE': tune.grid_search(['i3d_neck', 'lstm_neck']),
+        # 'MODEL.NECK.NECK_TYPE': tune.grid_search(['i3d_neck']),
+        'MODEL.BACKBONE.LAYERS': tune.grid_search([('x3',), ]),
+        # 'MODEL.NECK.SPP_LEVELS': tune.grid_search([[3], ]),
+        # 'MODEL.NECK.POOLING_MODE': tune.grid_search(['max']),
+        'TRAINER.CALLBACKS.BACKBONE.DEFROST_SCORE': tune.grid_search([0.12, 0.18]),
     }
 
     tune.run(
@@ -158,7 +164,7 @@ if __name__ == '__main__':
         config=tune_config,
         num_samples=1,
         progress_reporter=CLIReporter(
-            parameter_columns=['DATASET.ROI', 'MODEL.BACKBONE.LAYERS'],
+            parameter_columns=list(tune_config.keys()),
             metric_columns=["val_corr", 'hp_metric']
         ),
         name='debug',

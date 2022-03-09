@@ -1,4 +1,5 @@
 from .audio_neck import AudioNeck
+from .i2d_neck import I2DNeck
 from .i3d_neck import I3DNeck
 from .lstm_neck import TwoDLSTMNeck
 from src.utils.rigistry import Registry
@@ -21,6 +22,12 @@ def get_lstm_neck(cfg):
 @NECK_REGISTRY.register('audio_neck')
 def get_audio_neck(cfg):
     model = AudioNeck(cfg)
+    return model
+
+
+@NECK_REGISTRY.register('i2d_neck')
+def get_audio_neck(cfg):
+    model = I2DNeck(cfg)
     return model
 
 
