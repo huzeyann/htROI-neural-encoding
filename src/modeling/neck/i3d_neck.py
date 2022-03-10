@@ -48,9 +48,14 @@ class I3DNeck(nn.Module):
                 k = f'{pathway}_{x_i}'
 
                 if x_i != 'x_label':
-                    # reduce conv channel dimension
-                    self.first_convs.update(
-                        {k: nn.Conv3d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
+                    if self.planes[x_i] != -1:
+                        # reduce conv channel dimension
+                        self.first_convs.update(
+                            {k: nn.Conv3d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
+                    else:
+                        self.first_convs.update(
+                            {k: Rearrange('b c t h w -> b c t h w')})
+                        self.planes[x_i] = self.c_dict[x_i]
 
                     # optional pathways
                     if self.is_pyramid:
@@ -68,7 +73,7 @@ class I3DNeck(nn.Module):
 
                 else:
                     # x_label
-                    self.first_convs.update({k: nn.Sequential(Rearrange('b c -> b 1 1 1 c'),
+                    self.first_convs.update({k: nn.Sequential(Rearrange('b c -> b c 1 1 1'),
                                                               nn.Conv3d(self.c_dict[x_i], self.planes[x_i],
                                                                         kernel_size=1, stride=1))})
                     self.poolings.update({k: nn.Flatten()})

@@ -4,7 +4,7 @@ DATAMODULE:
 DATASET:
   FRAMES: 4
   NAME: Algonauts2021
-  RESOLUTION: 224
+  RESOLUTION: 64
   ROI: WB
   ROOT_DIR: /home/huze/Algonauts_2021_data/
   TRANSFORM: bdcn
@@ -30,7 +30,7 @@ MODEL:
     FC_DROPOUT: 0.0
     FC_HIDDEN_DIM: 2048
     FC_NUM_LAYERS: 2
-    FIRST_CONV_SIZE: 1
+    FIRST_CONV_SIZE: -1  # no first conv
     NECK_TYPE: i3d_neck
     LSTM:
       HIDDEN_SIZE: 2048
@@ -48,7 +48,7 @@ TRAINER:
   BATCH_SIZE: 4
   CALLBACKS:
     BACKBONE:
-      DEFROST_SCORE: 0.03
+      DEFROST_SCORE: 0.027
       INITIAL_RATIO_LR: 0.1
       LR_MULTIPLY_EFFICIENT: 1.6
       SHOULD_ALIGN: true
@@ -58,9 +58,9 @@ TRAINER:
       RM_AT_DONE: true
       ROOT_DIR: /home/huze/.cache/checkpoints/
     EARLY_STOP:
-      PATIENCE: 9
-    LOGGER: { }
-  FP16: false
+      PATIENCE: 6
+    LOGGER: {}
+  FP16: true
   GPUS: 1
   MAX_EPOCHS: 100
   VAL_CHECK_INTERVAL: 1.0

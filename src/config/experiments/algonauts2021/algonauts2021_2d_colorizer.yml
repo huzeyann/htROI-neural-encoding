@@ -2,7 +2,7 @@ DATAMODULE:
   I_CV_FOLD: -1
   NUM_CV_SPLITS: 10
 DATASET:
-  FRAMES: 4
+  FRAMES: 12
   NAME: Algonauts2021
   RESOLUTION: 224
   ROI: WB
@@ -53,9 +53,9 @@ TRAINER:
       RM_AT_DONE: true
       ROOT_DIR: /home/huze/.cache/checkpoints/
     EARLY_STOP:
-      PATIENCE: 9
+      PATIENCE: 6
     LOGGER: {}
-  FP16: true
+  FP16: false
   GPUS: 1
   MAX_EPOCHS: 100
   VAL_CHECK_INTERVAL: 1.0

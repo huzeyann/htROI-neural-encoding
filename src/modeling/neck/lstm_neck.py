@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
+from einops.layers.torch import Rearrange
 
 from src.config import get_cfg_defaults
 from src.modeling.components.pyramidpoolingnd import SpatialPyramidPoolingND, SpatialPyramidInterpolationND
@@ -88,9 +89,14 @@ class TwoDLSTMNeck(nn.Module):
             for pathway in self.pathways:
                 k = f'{pathway}_{x_i}'
 
-                # reduce conv channel dimension
-                self.first_convs.update(
-                    {k: nn.Conv3d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
+                if self.planes[x_i] != -1:
+                    # reduce conv channel dimension
+                    self.first_convs.update(
+                        {k: nn.Conv3d(self.c_dict[x_i], self.planes[x_i], kernel_size=1, stride=1)})
+                else:
+                    self.first_convs.update(
+                        {k: Rearrange('b c t h w -> b c t h w')})
+                    self.planes[x_i] = self.c_dict[x_i]
 
                 # optional pathways
                 if self.is_pyramid:

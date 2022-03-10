@@ -85,6 +85,7 @@ class Algonauts2021Dataset(Dataset):
                 if not flow_path.exists():
                     raise Exception('flow not precomputed')
                 self.cache_vid_relative_paths.append(flow_path.relative_to(self.root_dir))
+            self.frame_idxs = np.linspace(0, 64 - 1, self.cfg.DATASET.FRAMES).astype('int')
         elif self.cfg.DATASET.TRANSFORM == 'audio_mel':
             self.cache_dir = Path.joinpath(self.processed_dir, 'cache')
             self.cache_dir.mkdir(exist_ok=True)
@@ -148,6 +149,10 @@ class Algonauts2021Dataset(Dataset):
 
     def __getitem__(self, index):
         vid = np.load(Path.joinpath(self.root_dir, self.cache_vid_relative_paths[index]))
+        if self.cfg.DATASET.TRANSFORM == 'i3d_flow':
+            # flow is extracted at 64 fixed
+            vid = vid[:, self.frame_idxs, ...]
+
         if self.is_train:
             fmri = np.load(Path.joinpath(self.root_dir, self.fmri_relative_paths[index]))
             fmri = fmri[self.voxel_index]

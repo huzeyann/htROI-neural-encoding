@@ -125,7 +125,7 @@ if __name__ == '__main__':
     # reporter.logdir = '/home/huze/.cache/debug/'
     # tune.session.init(reporter)
 
-    exp_config = '/data_smr/huze/projects/kROI-voxel-encoding/src/config/experiments/algonauts2021/algonauts2021_3d_resnet.yml'
+    exp_config = '/data_smr/huze/projects/kROI-voxel-encoding/src/config/experiments/algonauts2021/algonauts2021_audio_vgg.yml'
 
     cfg = combine_cfgs(
         path_cfg_data=exp_config,
@@ -140,16 +140,18 @@ if __name__ == '__main__':
     # )
 
     tune_config = {
-        'DATASET.ROI': tune.grid_search(['LC2']),
+        'DATASET.ROI': tune.grid_search(['WB']),
         # 'DATASET.FRAMES': tune.grid_search([4, 8, 12, 16]),
         # 'MODEL.NECK.LSTM.BIDIRECTIONAL': tune.grid_search([False]),
         # 'MODEL.NECK.LSTM.NUM_LAYERS': tune.grid_search([1]),
         # 'MODEL.NECK.NECK_TYPE': tune.grid_search(['i3d_neck', 'lstm_neck']),
         # 'MODEL.NECK.NECK_TYPE': tune.grid_search(['i3d_neck']),
-        'MODEL.BACKBONE.LAYERS': tune.grid_search([('x3',), ]),
+        # 'MODEL.BACKBONE.LAYERS': tune.grid_search([('x3',), ]),
+        # 'DATASET.FRAMES': tune.grid_search([16, 32, 48, 64]),
         # 'MODEL.NECK.SPP_LEVELS': tune.grid_search([[3], ]),
         # 'MODEL.NECK.POOLING_MODE': tune.grid_search(['max']),
-        'TRAINER.CALLBACKS.BACKBONE.DEFROST_SCORE': tune.grid_search([0.12, 0.18]),
+        # 'TRAINER.CALLBACKS.BACKBONE.DEFROST_SCORE': tune.grid_search([0.09, 0.07]),
+        # 'DATASET.FRAMES': tune.grid_search([4, 8, 12, 16]),
     }
 
     tune.run(

@@ -1,7 +1,7 @@
 # source: https://github.com/iduta/pyconvsegnet
 
 # backbone download link:
-download_url = 'https://drive.google.com/u/0/uc?id=1P2qJNt72bCCDEO9FeKkWY4uakFLz-Ncb&export=download'
+download_url = 'https://drive.google.com/file/d/1wHK9WrW2YituFg6FLOSU06bPODASdZoT/view?usp=sharing'
 
 import os
 
@@ -39,13 +39,13 @@ def modify_pyconvsegnet_2d_partial(model, layers):
 
 
 def get_pyconvsegnet(pretrained=True, cache_dir='~/.cache/'):
-    model = PyConvSegNet(layers=152, classes=150, zoom_factor=8,
+    model = PyConvSegNet(layers=50, classes=150, zoom_factor=8,
                          pretrained=False,
                          backbone_net='pyconvresnet',
                          backbone_output_stride=8)
     if pretrained:
         cache_dir = os.path.expanduser(cache_dir)
-        path = os.path.join(cache_dir, 'ade20k_pyconvresnet152_pyconvsegnet.pth')
+        path = os.path.join(cache_dir, 'ade20k_pyconvresnet50_pyconvsegnet.pth')
         if not os.path.exists(path):
             raise Exception(f'{path} not exists! please download from: {download_url}')
 
