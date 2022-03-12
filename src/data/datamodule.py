@@ -7,12 +7,14 @@ from torch.utils.data import DataLoader, Subset
 
 from src.config import get_cfg_defaults
 from src.data.build import build_dataset
+
 # from src.data.utils import *
 
 NUM_WORKERS = 1
 
+
 class MyDataModule(pl.LightningDataModule):
-    def __init__(self, cfg):
+    def __init__(self, cfg=get_cfg_defaults()):
         super().__init__()
         self.cfg = cfg
         self.batch_size = self.cfg.TRAINER.BATCH_SIZE
@@ -47,10 +49,10 @@ class MyDataModule(pl.LightningDataModule):
         return DataLoader(self.predict_dataset, batch_size=self.batch_size,
                           shuffle=False, num_workers=NUM_WORKERS, pin_memory=True, prefetch_factor=2)
 
-
     def teardown(self, stage: Optional[str] = None):
         # Used to clean-up when the run is finished
         ...
+
 
 if __name__ == '__main__':
     cfg = get_cfg_defaults()

@@ -89,11 +89,6 @@ def run_single_train(cfg: CfgNode = get_cfg_defaults()):
     ### TRAIN
     trainer.fit(plmodel, datamodule=datamodule)
 
-    # trainer.checkpoint_callback.to_yaml(os.path.join(tune.get_trial_dir(), 'checkpoints.yaml'))
-    # tune.report({'best_val_corr': trainer.checkpoint_callback.best_model_score})
-    # for logger in loggers:
-    #     logger.log_metrics({"hp_metric", trainer.checkpoint_callback.best_model_score})
-
     if not cfg.DEBUG:
         ### PREDICT
         plmodel = plmodel.load_from_checkpoint(trainer.checkpoint_callback.best_model_path, cfg=cfg)
@@ -125,7 +120,7 @@ if __name__ == '__main__':
     # reporter.logdir = '/home/huze/.cache/debug/'
     # tune.session.init(reporter)
 
-    exp_config = '/data_smr/huze/projects/kROI-voxel-encoding/src/config/experiments/algonauts2021/algonauts2021_audio_vgg.yml'
+    exp_config = '/data_smr/huze/projects/kROI-voxel-encoding/src/config/experiments/algonauts2021/algonauts2021_2d_simclr.yml'
 
     cfg = combine_cfgs(
         path_cfg_data=exp_config,
@@ -145,12 +140,13 @@ if __name__ == '__main__':
         # 'MODEL.NECK.LSTM.BIDIRECTIONAL': tune.grid_search([False]),
         # 'MODEL.NECK.LSTM.NUM_LAYERS': tune.grid_search([1]),
         # 'MODEL.NECK.NECK_TYPE': tune.grid_search(['i3d_neck', 'lstm_neck']),
-        # 'MODEL.NECK.NECK_TYPE': tune.grid_search(['i3d_neck']),
-        # 'MODEL.BACKBONE.LAYERS': tune.grid_search([('x3',), ]),
+        # 'MODEL.NECK.FIRST_CONV_SIZE': tune.grid_search([256, 2048]),
+        # 'MODEL.BACKBONE.LAYERS': tune.grid_search([('x1', 'x2', 'x3', 'x4')]),
+        # 'DATASET.RESOLUTION': tune.grid_search([56, 224]),
         # 'DATASET.FRAMES': tune.grid_search([16, 32, 48, 64]),
-        # 'MODEL.NECK.SPP_LEVELS': tune.grid_search([[3], ]),
-        # 'MODEL.NECK.POOLING_MODE': tune.grid_search(['max']),
-        # 'TRAINER.CALLBACKS.BACKBONE.DEFROST_SCORE': tune.grid_search([0.09, 0.07]),
+        # 'MODEL.NECK.SPP_LEVELS': tune.grid_search([[1], ]),
+        'TRAINER.CALLBACKS.BACKBONE.LR_MULTIPLY_EFFICIENT': tune.grid_search([1.2, 1.6, 2.0]),
+        'TRAINER.CALLBACKS.BACKBONE.DEFROST_SCORE': tune.grid_search([0., 0.03, 0.06, 0.09, 0.12]),
         # 'DATASET.FRAMES': tune.grid_search([4, 8, 12, 16]),
     }
 
@@ -169,6 +165,56 @@ if __name__ == '__main__':
             parameter_columns=list(tune_config.keys()),
             metric_columns=["val_corr", 'hp_metric']
         ),
-        name='debug',
+        name='backbone_defrost_tune-algonauts2021_2d_simclr',
+        verbose=3,
+    )
+
+
+    exp_config = '/data_smr/huze/projects/kROI-voxel-encoding/src/config/experiments/algonauts2021/algonauts2021_2d_mobyswin.yml'
+
+    cfg = combine_cfgs(
+        path_cfg_data=exp_config,
+        list_cfg_override=['DEBUG', False]
+    )
+    # tune.run(
+    #     tune.with_parameters(
+    #         run_single_tune_config,
+    #         cfg=cfg,
+    #     ),
+    #     local_dir='/home/huze/ray_results/debug/'
+    # )
+
+    tune_config = {
+        'DATASET.ROI': tune.grid_search(['WB']),
+        # 'DATASET.FRAMES': tune.grid_search([4, 8, 12, 16]),
+        # 'MODEL.NECK.LSTM.BIDIRECTIONAL': tune.grid_search([False]),
+        # 'MODEL.NECK.LSTM.NUM_LAYERS': tune.grid_search([1]),
+        # 'MODEL.NECK.NECK_TYPE': tune.grid_search(['i3d_neck', 'lstm_neck']),
+        # 'MODEL.NECK.FIRST_CONV_SIZE': tune.grid_search([256, 2048]),
+        # 'MODEL.BACKBONE.LAYERS': tune.grid_search([('x1', 'x2', 'x3', 'x4')]),
+        # 'DATASET.RESOLUTION': tune.grid_search([56, 224]),
+        # 'DATASET.FRAMES': tune.grid_search([16, 32, 48, 64]),
+        # 'MODEL.NECK.SPP_LEVELS': tune.grid_search([[1], ]),
+        'TRAINER.CALLBACKS.BACKBONE.LR_MULTIPLY_EFFICIENT': tune.grid_search([1.2, 1.6, 2.0]),
+        'TRAINER.CALLBACKS.BACKBONE.DEFROST_SCORE': tune.grid_search([0., 0.03, 0.06, 0.09, 0.12]),
+        # 'DATASET.FRAMES': tune.grid_search([4, 8, 12, 16]),
+    }
+
+    tune.run(
+        tune.with_parameters(
+            run_single_tune_config,
+            cfg=cfg
+        ),
+        local_dir='/home/huze/ray_results/',
+        resources_per_trial={"cpu": 2, "gpu": 1},
+        mode="max",
+        metric='hp_metric',
+        config=tune_config,
+        num_samples=1,
+        progress_reporter=CLIReporter(
+            parameter_columns=list(tune_config.keys()),
+            metric_columns=["val_corr", 'hp_metric']
+        ),
+        name='backbone_defrost_tune-algonauts2021_2d_mobyswin',
         verbose=3,
     )

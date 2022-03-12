@@ -30,7 +30,7 @@ CHANNELS = {
     '2d_moby_swin_warp_3d': [192, 384, 768, 768, -1],
     '2d_seg_swin_warp_3d': [128, 256, 512, 1024, -1],
     # '2d_colorizer_warp_3d': [256, 512, 512, 128, -1],
-    '2d_colorizer_warp_3d': [128, 256, 512, 512, -1],
+    '2d_colorizer_warp_3d': [128, 512, 512, 313, -1],
     'audio_vggish': [192, 384, 768, 1536, 384],
 }
 # unpack

@@ -48,11 +48,11 @@ def my_query_df(df: pd.DataFrame, equal_dict: dict = {}, isin_dict: dict = {}) -
 
 
 def filter_single_layer_runs(run_df: pd.DataFrame):
-    return run_df[run_df.apply(lambda row: len(row['MODEL.BACKBONE.LAYERS']) == 1, axis=1)],
+    return run_df[run_df.apply(lambda row: len(row['MODEL.BACKBONE.LAYERS']) == 1, axis=1)]
 
 
 def filter_multi_layer_runs(run_df: pd.DataFrame):
-    return run_df[run_df.apply(lambda row: len(row['MODEL.BACKBONE.LAYERS']) > 1, axis=1)],
+    return run_df[run_df.apply(lambda row: len(row['MODEL.BACKBONE.LAYERS']) > 1, axis=1)]
 
 
 def mahou_list(query):

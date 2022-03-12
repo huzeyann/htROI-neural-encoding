@@ -64,16 +64,16 @@ def modify_colorizer_partial(model, layers):
 
         if max_depth >= 2:
             conv3_3 = self.model3(conv2_2)
-            ret_dict['x2'] = conv3_3
-        if max_depth >= 3:
             conv4_3 = self.model4(conv3_3)
+            ret_dict['x2'] = conv4_3
+        if max_depth >= 3:
             conv5_3 = self.model5(conv4_3)
-            ret_dict['x3'] = conv5_3
-        if max_depth >= 4:
             conv6_3 = self.model6(conv5_3)
+            ret_dict['x3'] = conv6_3
+        if max_depth >= 4:
             conv7_3 = self.model7(conv6_3)
-            ret_dict['x4'] = conv7_3
-        # conv8_3 = self.model8(conv7_3)
+            conv8_3 = self.model8(conv7_3)
+            ret_dict['x4'] = conv8_3
 
         # out = self.softmax(conv8_3)
         # out_reg = self.model_out(out)

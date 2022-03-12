@@ -11,7 +11,7 @@ from src.data.utils import *
 
 
 class Algonauts2021Dataset(Dataset):
-    def __init__(self, cfg, is_train=True):
+    def __init__(self, cfg=get_cfg_defaults(), is_train=True):
         """
         Dataset for RGB models
 
