@@ -1,6 +1,6 @@
+from src.data.utils import TwoFiveFive, RGB2LAB_L, RGB2BGR
 from torchvision import transforms
 
-from src.data.utils import *
 from src.utils.rigistry import Registry
 
 TRANSFORM_REGISTRY = Registry()

@@ -1,6 +1,8 @@
 python setup.py install
 export CUDA_VISIBLE_DEVICES=0,1
 
+while true; do rsync -avzP huze@192.168.192.16:/data/huze/ray_results/algonauts2021 /data/huze/ray_results/; sleep 100; done
+
 python -m src.launch_grid \
  --exp-config \
  src/config/experiments/algonauts2021_i3d_rgb.yml \

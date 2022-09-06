@@ -26,6 +26,7 @@ def load_run_df(results_dir: Union[Path, str]):
         ddf = pd.DataFrame(data)
         run_meta_info['score'] = ddf.val_corr.max()
         run_meta_info['time'] = ddf.time_total_s.max()
+        run_meta_info['iterations'] = ddf.iterations_since_restore.max()
 
         run_meta_infos.append(run_meta_info)
 

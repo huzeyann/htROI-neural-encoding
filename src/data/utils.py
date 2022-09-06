@@ -11,9 +11,6 @@ from PIL import Image
 from decord import VideoReader, cpu
 from skimage import color
 
-from src.modeling.backbone.vggish_audio.utils.utils import extract_wav_from_mp4
-from src.modeling.backbone.vggish_audio.vggish.vggish_input import wavfile_to_examples
-
 
 class RGB2LAB_L(torch.nn.Module):
     def forward(self, tensor):
@@ -192,7 +189,11 @@ def load_video(file, num_frames, load_transform):
     vid = vid.moveaxis(0, 1)
     return vid
 
+
 def load_audio(mp4_path, tmp_dir, shape=(3, 96, 64)):
+    from src.modeling.backbone.vggish_audio.utils.utils import extract_wav_from_mp4
+    from src.modeling.backbone.vggish_audio.vggish.vggish_input import wavfile_to_examples
+
     mp4_path = str(mp4_path)
     try:
         wav, aac = extract_wav_from_mp4(mp4_path, tmp_dir)

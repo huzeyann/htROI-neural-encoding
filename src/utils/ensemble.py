@@ -24,7 +24,7 @@ def optimize_val_correlation(vals: Tensor, y: Tensor, device='cpu', verbose=Fals
             return -score
 
         # define range for input
-        r_min, r_max = -1.0, 1.0
+        r_min, r_max = 0, 1.0
         # define the bounds on the search
         bounds = [[r_min, r_max] for _ in range(vals.shape[-1])]
         # perform the differential evolution search

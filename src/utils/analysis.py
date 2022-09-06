@@ -1,6 +1,8 @@
 import torch
 from torch import Tensor
 import numpy as np
+from tqdm.auto import tqdm
+import itertools
 
 
 def upper_tri_masking(A):
@@ -8,6 +10,72 @@ def upper_tri_masking(A):
     r = np.arange(m)
     mask = r[:, None] < r
     return A[mask]
+
+
+def chunked_iterable(iterable, size):
+    it = iter(iterable)
+    while True:
+        chunk = tuple(itertools.islice(it, size))
+        if not chunk:
+            break
+        yield chunk
+
+
+def my_ultimate_save_memory_corrcoef(x, chunk_size=4096):
+    """
+    Mimics `np.corrcoef`
+    Arguments
+    ---------
+    x : 2D torch.Tensor
+
+    Returns
+    -------
+    c : torch.Tensor
+        if x.size() = (5, 100), then return val will be of size (5,5)
+    Numpy docs ref:
+        https://docs.scipy.org/doc/numpy/reference/generated/numpy.corrcoef.html
+    Numpy code ref:
+        https://github.com/numpy/numpy/blob/v1.12.0/numpy/lib/function_base.py#L2933-L3013
+    Example:
+        >>> x = np.random.randn(5,120)
+        # result is a (5,5) matrix of correlations between rows
+        >>> np_corr = np.my_save_memory_corrcoef(x)
+        >>> th_corr = my_save_memory_corrcoef(torch.from_numpy(x))
+        >>> np.allclose(np_corr, th_corr.numpy())
+        # [out]: True
+    """
+    num_samples = x.shape[0]
+    size = x.size(1)
+
+    for i in tqdm(range(size), desc='minus mean'):
+        x[:, i] = x[:, i] - x[:, i].mean()
+
+    # calculate covariance matrix of rows
+    c = torch.zeros(num_samples, num_samples)
+    for ci in tqdm(list(chunked_iterable(range(num_samples), chunk_size)), desc='chunck'):
+        ci = torch.tensor(ci)
+        for cj in list(chunked_iterable(range(ci.min(), num_samples), chunk_size)):
+            cj = torch.tensor(cj)
+
+            fill = x[ci] @ x[cj].t()
+            c[ci.min():ci.max() + 1, cj.min():cj.max() + 1] = fill
+            c[cj.min():cj.max() + 1, ci.min():ci.max() + 1] = fill.t()
+
+    c = c / (size - 1)
+
+    # normalize covariance matrix
+    d = torch.diag(c)
+    stddev = torch.pow(d, 0.5)
+    #     print(stddev.shape)
+
+    for i in tqdm(range(c.shape[0]), desc='normalize'):
+        c[i] = c[i] / (stddev[i] * stddev)
+
+    # clamp between -1 and 1
+    # probably not necessary but numpy does it
+    c = torch.clamp(c, -1.0, 1.0)
+
+    return c
 
 
 def my_save_memory_corrcoef(x, save_memory=True):
@@ -36,7 +104,7 @@ def my_save_memory_corrcoef(x, save_memory=True):
     # calculate covariance matrix of rows
     size = x.size(1)
     mean_x = torch.mean(x, 1, keepdims=True)
-    xm = x.sub(mean_x.expand_as(x))
+    xm = x.sub(mean_x)
     if save_memory:
         del x
         del mean_x
