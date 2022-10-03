@@ -25,6 +25,8 @@ pip install mmcv-full==1.4.6 -f https://download.openmmlab.com/mmcv/dist/cu113/t
 pip install -r requirements.txt
 # if tqdm_notebook is not displaying widgets
 jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+python setup.py install
 ```
 
 <!-- ```shell
