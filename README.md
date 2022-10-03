@@ -1,48 +1,19 @@
-Laten ROI Voxel Encoding
-```
-src                              
-├── config
-│   ├── config.py                <- Default configs for the model 
-│   └── experiments
-│       ├── exp01_config.yaml    <- Configs for a specific experiment. Overwrites default 
-│       └── exp02_config.yaml       configs
-│       
-├── data                  
-│   ├── make_dataset.py          <- Script to generate data
-│   ├── bengali_data.py          <- Custom Pytorch Dataset, DataLoader & Collator class
-│   └── preprocessing.py         <- Custom data augmentation class
-│
-├── modeling                                  
-│   ├── backbone                 <- Model backbone architecture
-│   │   ├── se_resnext50.py
-│   │   └── densenet121.py
-│   │
-│   ├── layers                   <- Custom layers
-│   │   └── linear.py
-│   │
-│   ├── meta_arch                <- Scripts to combine backbone + head
-│   │   ├── baseline.py
-│   │   └── build.py
-│   │
-│   ├── head                     <- Build the head of the model
-│   │   ├── build.py
-│   │   └── simple_head.py
-│   │
-│   └── solver                   <- Scripts for building loss function, evaluation & optimizer
-│       ├── loss
-│       │   ├── build.py
-│       │   ├── softmax_cross_entropy.py
-│       │   └── label_smoothing_ce.py
-│       ├── evaluation.py
-│       └── optimizer.py 
-│ 
-├── tools                        <- Training loop and custom helper functions 
-│   ├── train.py
-│   └── registry.py 
-│ 
-└── visualization                <- Scripts for exploratory results & visualizations 
-       └── visualize.py
-```
+# Upgrading Voxel-wise Encoding Model via Integrated Integration over Features and Brain Networks
+
+Please see `notebooks/`. Full runtime steps: 
+
+1. (Notebook000.ipynb) On whole-brain voxels. Launch multiple feature block concatenation baseline model with freeze backbone, record final score and use the 1/2 as backbone defrost milestone. 
+1. (Notebook001.ipynb) On whole-brain voxels. Launch single layer-pooling feature block models (16 models for each backbone) with backbone defrost milestone score set according to step1.
+1. (Notebook010.ipynb) Ensemble all backbone models from step2, also save their voxel embeddings.
+1. (Notebook011.ipynb, Notebook012.ipynb) Run hierarchical clustering on voxel embeddings for each backbone model on their weighted and concatenated voxel embeddings. Save the resulting voxels clusters as htROI.
+1. (Notebook100.ipynb) On ROI voxels, for each ROI. Launch multiple feature block concatenation baseline model with freeze backbone, record final score and use the 1/2 as backbone defrost milestone. 
+1. (Notebook101.ipynb) On ROI voxels, for each ROI. Launch single layer-pooling feature block models (16 models for each ROI) with backbone defrost milestone score set according to step5.
+1. (Notebook200.ipynb) Ensemble each ROI models from step6. Assemble ROIs from the same atlas to whole-brain. 
+1. (Notebook200.ipynb) Do ROI intersection ensemble across atlas models.
+2. (900~) subbmission to online evaluation on test set, and make figures
+
+
+To setup the python env: 
 
 ```shell
 conda create -n my_env python=3.8.8
@@ -55,11 +26,14 @@ pip install -r requirements.txt
 jupyter labextension install @jupyter-widgets/jupyterlab-manager
 ```
 
-```shell
+<!-- ```shell
 cp -r src/config/dataset/algonauts2021_roi_voxel_indexs /home/huze/Algonauts_2021_data/voxel_indexs
-```
+``` -->
 
 
+If want to include optical flow model (I3d_Flow), optical flow need to be pre-computed:
+
+> Note: ignore python env in `video_features`, use my python env 
 ```shell
 git submodule update --init --recursive
 cd video_features
@@ -80,4 +54,3 @@ mv ./output/my /home/huze/Algonauts_2021_data/precomputed_flow
 cp models/i3d/checkpoints/i3d_flow.pt /home/huze/.cache/i3d_flow.pt
 
 ```
-Note: ignore python env in `video_features`, use my project python env 
