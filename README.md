@@ -12,6 +12,7 @@ Please see `notebooks/`. Full runtime steps:
 1. (Notebook200.ipynb) Do ROI intersection ensemble across atlas models.
 2. (900~) subbmission to online evaluation on test set, and make figures
 
+---
 
 To setup the python env: 
 
@@ -29,6 +30,15 @@ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 <!-- ```shell
 cp -r src/config/dataset/algonauts2021_roi_voxel_indexs /home/huze/Algonauts_2021_data/voxel_indexs
 ``` -->
+
+Also update your paths in the `.env` file:
+```
+DATASET.ROOT_DIR=/home/huze/Algonauts_2021_data/
+VOXEL_INDEX_DIR=/home/huze/Algonauts_2021_data/voxel_indexs/
+MODEL.BACKBONE.PRETRAINED_WEIGHT_DIR=/home/huze/.cache/
+TRAINER.CALLBACKS.CHECKPOINT.ROOT_DIR=/home/huze/.cache/checkpoints/
+RESULTS_DIR=/data/huze/ray_results/algonauts2021/
+```
 
 
 If want to include optical flow model (I3d_Flow), optical flow need to be pre-computed:
