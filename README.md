@@ -1,5 +1,25 @@
 # Upgrading Voxel-wise Encoding Model via Integrated Integration over Features and Brain Networks
 
+paper: https://www.biorxiv.org/content/10.1101/2022.11.06.515387v1.abstract
+
+```
+@article {Li2022.11.06.515387,
+	author = {Li, Yuanning and Yang, Huzheng and Gu, Shi},
+	title = {Upgrading Voxel-wise Encoding Model via Integrated Integration over Features and Brain Networks},
+	elocation-id = {2022.11.06.515387},
+	year = {2022},
+	doi = {10.1101/2022.11.06.515387},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2022/11/07/2022.11.06.515387},
+	eprint = {https://www.biorxiv.org/content/early/2022/11/07/2022.11.06.515387.full.pdf},
+	journal = {bioRxiv}
+}
+```
+
+This repository contain the code for my Algonauts2021 Challenge submissions, the framework is appliable to any voxel-wise encoding model with minimum modifications.
+
+---
+
 Please see `notebooks/`. Full runtime steps: 
 
 1. (Notebook000.ipynb) On whole-brain voxels. Launch multiple feature block concatenation baseline model with freeze backbone, record final score and use the 1/2 as backbone defrost milestone. 
